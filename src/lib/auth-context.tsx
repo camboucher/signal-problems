@@ -14,6 +14,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   updateUsername: (username: string) => Promise<{ error: Error | null }>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -66,6 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  async function refreshProfile() {
+    if (session?.user) await fetchProfile(session.user.id)
+  }
+
   async function updateUsername(username: string) {
     if (!session?.user) return { error: new Error('Not authenticated') }
     const { error } = await supabase
@@ -88,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
       updateUsername,
+      refreshProfile,
     }}>
       {children}
     </AuthContext.Provider>

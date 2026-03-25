@@ -7,6 +7,7 @@ import MarketsPage from './pages/MarketsPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import UsernameSetupPage from './pages/UsernameSetupPage'
+import MarketDetailPage from './pages/MarketDetailPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
@@ -42,7 +43,7 @@ export default function App() {
 
           {/* Placeholder routes — implemented in later phases */}
           <Route path="/leaderboard" element={<ComingSoon title="Leaderboard" />} />
-          <Route path="/market/:id" element={<ComingSoon title="Market" />} />
+          <Route path="/market/:id" element={<MarketDetailPage />} />
           <Route path="/profile/:username" element={<ComingSoon title="Profile" />} />
           <Route path="/settings" element={<ComingSoon title="Settings" />} />
           <Route path="/about" element={<ComingSoon title="About" />} />
