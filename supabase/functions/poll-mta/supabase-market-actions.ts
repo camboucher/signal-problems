@@ -40,3 +40,15 @@ export async function rpcCancelStaleMarkets(supabase: SupabaseClient): Promise<v
   const { error } = await supabase.rpc("cancel_stale_markets");
   if (error) console.error("cancel_stale_markets error:", error);
 }
+
+/** Settles closed markets whose predicted arrival has passed, credits winners. */
+export async function rpcSettleMarkets(
+  supabase: SupabaseClient,
+): Promise<{ settled: number }> {
+  const { data, error } = await supabase.rpc("settle_markets");
+  if (error) {
+    console.error("settle_markets error:", error);
+    return { settled: 0 };
+  }
+  return (data as { settled?: number }) ?? { settled: 0 };
+}

@@ -3,6 +3,7 @@ import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   rpcCancelStaleMarkets,
   rpcCloseDueMarkets,
+  rpcSettleMarkets,
   upsertMarketsInBatches,
 } from "./supabase-market-actions.ts";
 import type { MarketRow } from "./types.ts";
@@ -93,5 +94,37 @@ describe("rpcCancelStaleMarkets", () => {
     const rpc = vi.fn(async () => ({ error: null }));
     await rpcCancelStaleMarkets(makeSupabaseMock(rpc));
     expect(rpc).toHaveBeenCalledWith("cancel_stale_markets");
+  });
+});
+
+describe("rpcSettleMarkets", () => {
+  it("invokes settle_markets RPC and returns settled count", async () => {
+    const rpc = vi.fn(async () => ({
+      data: { settled: 5 },
+      error: null,
+    }));
+    const result = await rpcSettleMarkets(makeSupabaseMock(rpc));
+    expect(rpc).toHaveBeenCalledWith("settle_markets");
+    expect(result).toEqual({ settled: 5 });
+  });
+
+  it("returns 0 settled on error", async () => {
+    const rpc = vi.fn(async () => ({
+      data: null,
+      error: { message: "boom" },
+    }));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const result = await rpcSettleMarkets(makeSupabaseMock(rpc));
+    expect(result).toEqual({ settled: 0 });
+    spy.mockRestore();
+  });
+
+  it("handles null data gracefully", async () => {
+    const rpc = vi.fn(async () => ({
+      data: null,
+      error: null,
+    }));
+    const result = await rpcSettleMarkets(makeSupabaseMock(rpc));
+    expect(result).toEqual({ settled: 0 });
   });
 });

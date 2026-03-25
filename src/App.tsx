@@ -8,6 +8,10 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import UsernameSetupPage from './pages/UsernameSetupPage'
 import MarketDetailPage from './pages/MarketDetailPage'
+import LeaderboardPage from './pages/LeaderboardPage'
+import ProfilePage from './pages/ProfilePage'
+import SettingsPage from './pages/SettingsPage'
+import AboutPage from './pages/AboutPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
@@ -41,27 +45,22 @@ export default function App() {
             }
           />
 
-          {/* Placeholder routes — implemented in later phases */}
-          <Route path="/leaderboard" element={<ComingSoon title="Leaderboard" />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/market/:id" element={<MarketDetailPage />} />
-          <Route path="/profile/:username" element={<ComingSoon title="Profile" />} />
-          <Route path="/settings" element={<ComingSoon title="Settings" />} />
-          <Route path="/about" element={<ComingSoon title="About" />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route
+            path="/settings"
+            element={
+              <RequireAuth>
+                <SettingsPage />
+              </RequireAuth>
+            }
+          />
+          <Route path="/about" element={<AboutPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>
-  )
-}
-
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-xl font-bold tracking-tight mb-6">{title}</h1>
-      <div className="text-sm text-gray-400 text-center py-16 border border-dashed border-gray-200">
-        Coming in a future phase
-      </div>
-    </div>
   )
 }

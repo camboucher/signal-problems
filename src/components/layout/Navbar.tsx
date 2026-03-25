@@ -1,6 +1,10 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth-context'
 
+function navLinkClass({ isActive }: { isActive: boolean }) {
+  return `text-sm transition-colors ${isActive ? 'text-gray-950 font-medium' : 'text-gray-500 hover:text-gray-950'}`
+}
+
 export default function Navbar() {
   const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
@@ -17,50 +21,60 @@ export default function Navbar() {
           SIGNAL PROBLEMS
         </Link>
 
-        <nav className="flex items-center gap-4">
-          <NavLink
-            to="/leaderboard"
-            className={({ isActive }) =>
-              `text-sm ${isActive ? 'text-gray-950 font-medium' : 'text-gray-500 hover:text-gray-950'}`
-            }
-          >
+        {/* Desktop nav — hidden on mobile (replaced by bottom nav) */}
+        <nav className="hidden sm:flex items-center gap-5">
+          <NavLink to="/" end className={navLinkClass}>
+            Trains
+          </NavLink>
+          <NavLink to="/leaderboard" className={navLinkClass}>
             Leaderboard
+          </NavLink>
+          <NavLink to="/about" className={navLinkClass}>
+            About
           </NavLink>
 
           {user ? (
             <>
               <NavLink
                 to={`/profile/${profile?.username ?? user.id}`}
-                className={({ isActive }) =>
-                  `text-sm ${isActive ? 'text-gray-950 font-medium' : 'text-gray-500 hover:text-gray-950'}`
-                }
+                className={navLinkClass}
               >
                 {profile?.username ?? 'Profile'}
               </NavLink>
+              <NavLink to="/settings" className={navLinkClass}>
+                Settings
+              </NavLink>
               <button
                 onClick={handleSignOut}
-                className="text-sm text-gray-500 hover:text-gray-950"
+                className="text-sm text-gray-400 hover:text-gray-950 transition-colors"
               >
                 Sign out
               </button>
             </>
           ) : (
             <>
-              <NavLink
-                to="/login"
-                className="text-sm text-gray-500 hover:text-gray-950"
-              >
+              <NavLink to="/login" className={navLinkClass}>
                 Sign in
               </NavLink>
-              <NavLink
-                to="/signup"
-                className="btn-primary text-xs px-3 py-1.5"
-              >
+              <NavLink to="/signup" className="btn-primary text-xs px-3 py-1.5">
                 Sign up
               </NavLink>
             </>
           )}
         </nav>
+
+        {/* Mobile: show auth state inline since bottom nav handles navigation */}
+        <div className="sm:hidden flex items-center gap-3">
+          {user ? (
+            <span className="text-xs text-gray-400 tabular-nums">
+              {profile?.credits_balance?.toLocaleString()} cr
+            </span>
+          ) : (
+            <NavLink to="/signup" className="btn-primary text-xs px-3 py-1.5">
+              Sign up
+            </NavLink>
+          )}
+        </div>
       </div>
     </header>
   )

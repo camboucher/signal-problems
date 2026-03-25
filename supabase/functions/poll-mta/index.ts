@@ -4,6 +4,7 @@ import { fetchAllMtaFeeds } from "./fetch-mta-feeds.ts";
 import {
   rpcCancelStaleMarkets,
   rpcCloseDueMarkets,
+  rpcSettleMarkets,
   upsertMarketsInBatches,
 } from "./supabase-market-actions.ts";
 
@@ -36,6 +37,7 @@ Deno.serve(async (req) => {
 
     const upsertedCount = await upsertMarketsInBatches(supabase, markets);
     await rpcCloseDueMarkets(supabase);
+    const settleResult = await rpcSettleMarkets(supabase);
     await rpcCancelStaleMarkets(supabase);
 
     const elapsed = Date.now() - t0;
@@ -45,6 +47,7 @@ Deno.serve(async (req) => {
       feeds_ok: fetchResult.feedsOk,
       feeds_failed: fetchResult.feedsFailed,
       markets_upserted: upsertedCount,
+      markets_settled: settleResult.settled,
       ...(fetchResult.errors.length > 0 && { errors: fetchResult.errors }),
     };
 
