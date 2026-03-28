@@ -60,7 +60,7 @@ export default function WagerModal({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-sm bg-white p-6 shadow-lg focus:outline-none">
+        <Dialog.Content className="fixed inset-x-0 bottom-0 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:w-[calc(100%-2rem)] sm:max-w-sm bg-white p-6 safe-bottom shadow-lg focus:outline-none">
           <Dialog.Title className="text-base font-bold tracking-tight">
             Place Wager
           </Dialog.Title>

@@ -229,9 +229,16 @@ export default function MarketDetailPage() {
                 className="flex items-center justify-between px-4 py-2.5"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">
-                    {w.profiles?.username ?? 'Anon'}
-                  </span>
+                  {w.profiles?.username ? (
+                    <Link
+                      to={`/profile/${w.profiles.username}`}
+                      className="text-sm hover:underline"
+                    >
+                      {w.profiles.username}
+                    </Link>
+                  ) : (
+                    <span className="text-sm text-gray-400">Anon</span>
+                  )}
                   <span
                     className={`text-[10px] font-bold uppercase tracking-wider ${
                       w.prediction === 'on_time'

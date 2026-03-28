@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { isMockMode } from '../lib/mock-mode'
+import { applyMockWager } from '../mock/data'
 import type { WagerPrediction } from '../types/database'
 
 interface PlaceWagerArgs {
@@ -21,6 +23,11 @@ export function usePlaceWager() {
       amount,
       currentBalance,
     }: PlaceWagerArgs) => {
+      if (isMockMode()) {
+        applyMockWager({ marketId, userId, prediction, amount })
+        return
+      }
+
       const { error: wagerErr } = await supabase.from('wagers').insert({
         user_id: userId,
         market_id: marketId,

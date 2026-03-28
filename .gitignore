@@ -167,3 +167,6 @@ supabase/functions/.env
 
 # TypeScript
 *.tsbuildinfo
+
+# Cursor plans
+plans/

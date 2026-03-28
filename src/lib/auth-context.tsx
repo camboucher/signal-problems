@@ -5,7 +5,7 @@ import type { Database } from '../types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
-interface AuthContextValue {
+export interface AuthContextValue {
   session: Session | null
   user: User | null
   profile: Profile | null
@@ -17,7 +17,7 @@ interface AuthContextValue {
   refreshProfile: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null)
+export const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)

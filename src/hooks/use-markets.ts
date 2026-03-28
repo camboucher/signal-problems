@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { isMockMode } from '../lib/mock-mode'
+import { filterMockMarkets } from '../mock/data'
 import type { Database } from '../types/database'
 
 type Market = Database['public']['Tables']['markets']['Row']
@@ -13,6 +15,8 @@ export function useMarkets(filter: MarketsFilter = {}) {
   return useQuery<Market[]>({
     queryKey: ['markets', filter],
     queryFn: async () => {
+      if (isMockMode()) return filterMockMarkets(filter)
+
       let query = supabase
         .from('markets')
         .select('*')
@@ -38,6 +42,6 @@ export function useMarkets(filter: MarketsFilter = {}) {
       if (error) throw error
       return data
     },
-    refetchInterval: 30_000,
+    refetchInterval: isMockMode() ? false : 30_000,
   })
 }

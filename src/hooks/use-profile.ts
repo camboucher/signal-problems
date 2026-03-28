@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { isMockMode } from '../lib/mock-mode'
+import { getMockProfileByUsername, getMockWagersForUser } from '../mock/data'
 import type { MarketStatus, MarketOutcome, WagerPrediction } from '../types/database'
 
 export interface WagerWithMarket {
@@ -23,6 +25,11 @@ export function useProfile(username: string | undefined) {
     queryKey: ['profile', username],
     queryFn: async () => {
       if (!username) throw new Error('No username')
+      if (isMockMode()) {
+        const row = getMockProfileByUsername(username)
+        if (!row) throw new Error('Profile not found')
+        return row
+      }
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, credits_balance, created_at')
@@ -38,6 +45,9 @@ export function useProfile(username: string | undefined) {
   const wagersQuery = useQuery({
     queryKey: ['profile-wagers', profileQuery.data?.id],
     queryFn: async () => {
+      if (isMockMode()) {
+        return getMockWagersForUser(profileQuery.data!.id) as WagerWithMarket[]
+      }
       const { data, error } = await supabase
         .from('wagers')
         .select(`
@@ -61,6 +71,9 @@ export function useMyWagers(userId: string | undefined) {
   return useQuery({
     queryKey: ['my-wagers', userId],
     queryFn: async () => {
+      if (isMockMode()) {
+        return getMockWagersForUser(userId!) as WagerWithMarket[]
+      }
       const { data, error } = await supabase
         .from('wagers')
         .select(`

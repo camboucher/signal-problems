@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { isMockMode } from '../lib/mock-mode'
+import { getMockLeaderboard } from '../mock/data'
 
 export type TimePeriod = '24h' | '7d' | '30d' | 'all'
 
@@ -23,6 +25,8 @@ export function useLeaderboard(period: TimePeriod) {
   return useQuery({
     queryKey: ['leaderboard', period],
     queryFn: async () => {
+      if (isMockMode()) return getMockLeaderboard(period)
+
       const startDate = getStartDate(period)
 
       let query = supabase
@@ -59,6 +63,6 @@ export function useLeaderboard(period: TimePeriod) {
       return Array.from(byUser.values()).sort((a, b) => b.net_profit - a.net_profit)
     },
     staleTime: 60_000,
-    refetchInterval: 60_000,
+    refetchInterval: isMockMode() ? false : 60_000,
   })
 }

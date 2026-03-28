@@ -1,5 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { isMockMode } from '../lib/mock-mode'
+import {
+  getMockMarketById,
+  getMockStopStats,
+  getMockWagersForMarket,
+} from '../mock/data'
 import type { Database } from '../types/database'
 
 type Market = Database['public']['Tables']['markets']['Row']
@@ -15,6 +21,11 @@ export function useMarketDetail(id: string | undefined) {
     queryKey: ['market', id],
     queryFn: async () => {
       if (!id) throw new Error('Missing market ID')
+      if (isMockMode()) {
+        const m = getMockMarketById(id)
+        if (!m) throw new Error('Market not found')
+        return m
+      }
       const { data, error } = await supabase
         .from('markets')
         .select('*')
@@ -24,13 +35,14 @@ export function useMarketDetail(id: string | undefined) {
       return data
     },
     enabled: !!id,
-    refetchInterval: 15_000,
+    refetchInterval: isMockMode() ? false : 15_000,
   })
 
   const wagers = useQuery<WagerWithProfile[]>({
     queryKey: ['market-wagers', id],
     queryFn: async () => {
       if (!id) throw new Error('Missing market ID')
+      if (isMockMode()) return getMockWagersForMarket(id) as WagerWithProfile[]
       const { data, error } = await supabase
         .from('wagers')
         .select('*, profiles(username)')
@@ -40,7 +52,7 @@ export function useMarketDetail(id: string | undefined) {
       return (data ?? []) as WagerWithProfile[]
     },
     enabled: !!id,
-    refetchInterval: 15_000,
+    refetchInterval: isMockMode() ? false : 15_000,
   })
 
   const stopStats = useQuery<StopStat | null>({
@@ -51,6 +63,9 @@ export function useMarketDetail(id: string | undefined) {
     ],
     queryFn: async () => {
       if (!market.data) throw new Error('No market data')
+      if (isMockMode()) {
+        return getMockStopStats(market.data.stop_id, market.data.route_id)
+      }
       const { data, error } = await supabase
         .from('stop_stats')
         .select('*')
@@ -61,6 +76,7 @@ export function useMarketDetail(id: string | undefined) {
       return data
     },
     enabled: !!market.data,
+    ...(isMockMode() ? { refetchInterval: false as const } : {}),
   })
 
   return { market, wagers, stopStats }
