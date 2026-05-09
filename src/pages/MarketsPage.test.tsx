@@ -98,7 +98,7 @@ describe('MarketsPage', () => {
       data: [],
       isLoading: false,
       error: null,
-    } as ReturnType<typeof useMyWagers>)
+    } as unknown as ReturnType<typeof useMyWagers>)
 
     vi.mocked(useFavoriteStops).mockReturnValue({
       favoriteStopIds: [],
