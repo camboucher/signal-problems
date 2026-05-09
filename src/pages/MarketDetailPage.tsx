@@ -47,6 +47,10 @@ export default function MarketDetailPage() {
     wagers.data
       ?.filter((w) => w.prediction === 'late')
       .reduce((sum, w) => sum + w.amount, 0) ?? 0
+  const veryLateAmount =
+    wagers.data
+      ?.filter((w) => w.prediction === 'very_late')
+      .reduce((sum, w) => sum + w.amount, 0) ?? 0
 
   const userWager = wagers.data?.find((w) => w.user_id === user?.id)
 
@@ -125,10 +129,14 @@ export default function MarketDetailPage() {
           <Row label="Outcome">
             <span
               className={`text-xs font-bold uppercase tracking-wider ${
-                m.outcome === 'on_time' ? 'text-emerald-500' : 'text-red-500'
+                m.outcome === 'on_time'
+                  ? 'text-emerald-500'
+                  : m.outcome === 'very_late'
+                  ? 'text-red-500'
+                  : 'text-amber-500'
               }`}
             >
-              {m.outcome === 'on_time' ? 'On Time' : 'Late'}
+              {m.outcome === 'on_time' ? 'On Time' : m.outcome === 'very_late' ? 'Very Late' : 'Late'}
             </span>
           </Row>
         )}
@@ -156,7 +164,7 @@ export default function MarketDetailPage() {
         <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
           Wager Distribution
         </p>
-        <DistributionBar onTimeAmount={onTimeAmount} lateAmount={lateAmount} />
+        <DistributionBar onTimeAmount={onTimeAmount} lateAmount={lateAmount} veryLateAmount={veryLateAmount} />
       </div>
 
       {/* Wager action */}
@@ -186,10 +194,16 @@ export default function MarketDetailPage() {
                 className={`text-sm font-bold uppercase ${
                   userWager.prediction === 'on_time'
                     ? 'text-emerald-600'
-                    : 'text-red-600'
+                    : userWager.prediction === 'very_late'
+                    ? 'text-red-600'
+                    : 'text-amber-600'
                 }`}
               >
-                {userWager.prediction === 'on_time' ? 'On Time' : 'Late'}
+                {userWager.prediction === 'on_time'
+                  ? 'On Time'
+                  : userWager.prediction === 'very_late'
+                  ? 'Very Late'
+                  : 'Late'}
               </span>
               <span className="text-sm font-bold tabular-nums">
                 {userWager.amount.toLocaleString()} credits
@@ -243,10 +257,16 @@ export default function MarketDetailPage() {
                     className={`text-[10px] font-bold uppercase tracking-wider ${
                       w.prediction === 'on_time'
                         ? 'text-emerald-500'
-                        : 'text-red-500'
+                        : w.prediction === 'very_late'
+                        ? 'text-red-500'
+                        : 'text-amber-500'
                     }`}
                   >
-                    {w.prediction === 'on_time' ? 'On Time' : 'Late'}
+                    {w.prediction === 'on_time'
+                      ? 'On Time'
+                      : w.prediction === 'very_late'
+                      ? 'Very Late'
+                      : 'Late'}
                   </span>
                 </div>
                 <span className="text-xs text-gray-400 tabular-nums">

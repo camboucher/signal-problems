@@ -52,6 +52,11 @@ export function buildMockMarkets(): Market[] {
   return schedules.map((s, i) => {
     const scheduled = new Date(now + s.m * 60_000).toISOString()
     const predicted = new Date(now + (s.m + (i % 3) - 1) * 60_000).toISOString()
+    // Vary odds per market to make mock mode illustrative
+    const onTimeRate = 0.55 + (i * 0.07)
+    const pLateTotal = 1 - onTimeRate
+    const vig = 0.05
+    const clamp = (x: number) => Math.max(1.1, Math.min(15.0, x))
     return {
       id: MARKET_IDS[i]!,
       trip_id: s.trip,
@@ -63,6 +68,9 @@ export function buildMockMarkets(): Market[] {
       status: 'open' as const,
       outcome: null,
       actual_arrival: null,
+      on_time_odds: Math.round(clamp((1 / onTimeRate) * (1 - vig)) * 100) / 100,
+      late_odds: Math.round(clamp((1 / (pLateTotal * 0.75)) * (1 - vig)) * 100) / 100,
+      very_late_odds: Math.round(clamp((1 / (pLateTotal * 0.25)) * (1 - vig)) * 100) / 100,
       created_at: baseCreatedAt(),
       updated_at: new Date(now).toISOString(),
     }
@@ -117,6 +125,7 @@ const initialWagers: Wager[] = [
     market_id: MARKET_IDS[0]!,
     prediction: 'on_time',
     amount: 50,
+    odds_accepted: 1.62,
     payout: null,
     created_at: new Date(Date.now() - 3_600_000).toISOString(),
   },
@@ -126,6 +135,7 @@ const initialWagers: Wager[] = [
     market_id: MARKET_IDS[0]!,
     prediction: 'late',
     amount: 100,
+    odds_accepted: 3.17,
     payout: null,
     created_at: new Date(Date.now() - 3_000_000).toISOString(),
   },
@@ -135,6 +145,7 @@ const initialWagers: Wager[] = [
     market_id: MARKET_IDS[1]!,
     prediction: 'late',
     amount: 80,
+    odds_accepted: 2.85,
     payout: null,
     created_at: new Date(Date.now() - 2_800_000).toISOString(),
   },
@@ -142,8 +153,9 @@ const initialWagers: Wager[] = [
     id: '20000000-0000-4000-8000-000000000004',
     user_id: OTHER_USER_IDS.delayhunter,
     market_id: MARKET_IDS[2]!,
-    prediction: 'on_time',
+    prediction: 'very_late',
     amount: 120,
+    odds_accepted: 9.5,
     payout: null,
     created_at: new Date(Date.now() - 2_500_000).toISOString(),
   },
@@ -303,6 +315,7 @@ export function applyMockWager(args: {
   userId: string
   prediction: Database['public']['Tables']['wagers']['Row']['prediction']
   amount: number
+  oddsAccepted: number
 }): void {
   if (args.userId !== MOCK_USER_ID) return
   mockCreditsBalance -= args.amount
@@ -313,6 +326,7 @@ export function applyMockWager(args: {
     market_id: args.marketId,
     prediction: args.prediction,
     amount: args.amount,
+    odds_accepted: args.oddsAccepted,
     payout: null,
     created_at: new Date().toISOString(),
   }

@@ -18,6 +18,18 @@ interface Props {
   onSuccess: () => void
 }
 
+const TIERS: { prediction: WagerPrediction; label: string; sub: string; oddsKey: keyof Market }[] = [
+  { prediction: 'on_time',   label: 'On Time',   sub: '≤ 5 min',   oddsKey: 'on_time_odds'   },
+  { prediction: 'late',      label: 'Late',       sub: '5–20 min',  oddsKey: 'late_odds'       },
+  { prediction: 'very_late', label: 'Very Late',  sub: '> 20 min',  oddsKey: 'very_late_odds'  },
+]
+
+const TIER_COLORS: Record<WagerPrediction, { active: string; border: string }> = {
+  on_time:   { active: 'border-emerald-500 bg-emerald-50 text-emerald-700', border: 'border-gray-200 text-gray-400 hover:border-gray-300' },
+  late:      { active: 'border-amber-500  bg-amber-50  text-amber-700',  border: 'border-gray-200 text-gray-400 hover:border-gray-300' },
+  very_late: { active: 'border-red-500    bg-red-50    text-red-700',    border: 'border-gray-200 text-gray-400 hover:border-gray-300' },
+}
+
 export default function WagerModal({
   market,
   profile,
@@ -35,14 +47,19 @@ export default function WagerModal({
   const canSubmit =
     prediction !== null && amount >= MIN_WAGER && amount <= maxAllowed && !!userId
 
+  const selectedOdds = prediction
+    ? (market[TIERS.find((t) => t.prediction === prediction)!.oddsKey] as number)
+    : null
+
   function handleSubmit() {
-    if (!canSubmit || !userId || !prediction) return
+    if (!canSubmit || !userId || !prediction || selectedOdds === null) return
     mutate(
       {
         marketId: market.id,
         userId,
         prediction,
         amount,
+        oddsAccepted: selectedOdds,
         currentBalance: balance,
       },
       {
@@ -68,29 +85,28 @@ export default function WagerModal({
             {market.route_id} · {market.stop_name}
           </Dialog.Description>
 
-          <div className="grid grid-cols-2 gap-3 mt-5">
-            <button
-              type="button"
-              onClick={() => setPrediction('on_time')}
-              className={`py-4 text-sm font-bold uppercase tracking-wide border-2 transition-colors ${
-                prediction === 'on_time'
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                  : 'border-gray-200 text-gray-400 hover:border-gray-300'
-              }`}
-            >
-              On Time
-            </button>
-            <button
-              type="button"
-              onClick={() => setPrediction('late')}
-              className={`py-4 text-sm font-bold uppercase tracking-wide border-2 transition-colors ${
-                prediction === 'late'
-                  ? 'border-red-500 bg-red-50 text-red-700'
-                  : 'border-gray-200 text-gray-400 hover:border-gray-300'
-              }`}
-            >
-              Late
-            </button>
+          <div className="grid grid-cols-3 gap-2 mt-5">
+            {TIERS.map((tier) => {
+              const odds = market[tier.oddsKey] as number
+              const isSelected = prediction === tier.prediction
+              const colors = TIER_COLORS[tier.prediction]
+              return (
+                <button
+                  key={tier.prediction}
+                  type="button"
+                  onClick={() => setPrediction(tier.prediction)}
+                  className={`py-3 px-1 text-center border-2 transition-colors ${
+                    isSelected ? colors.active : colors.border
+                  }`}
+                >
+                  <div className="text-xs font-bold uppercase tracking-wide leading-tight">
+                    {tier.label}
+                  </div>
+                  <div className="text-[10px] mt-0.5 opacity-70">{tier.sub}</div>
+                  <div className="text-sm font-bold mt-1 tabular-nums">{odds.toFixed(2)}×</div>
+                </button>
+              )
+            })}
           </div>
 
           <div className="mt-5">
@@ -128,17 +144,17 @@ export default function WagerModal({
             </div>
           </div>
 
-          {prediction && (
+          {prediction && selectedOdds !== null && (
             <div className="mt-4 px-3 py-2 bg-gray-50 border border-gray-100 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-500">Potential payout</span>
                 <span className="font-bold tabular-nums">
-                  {(amount * 2).toLocaleString()} credits
+                  {Math.round(amount * selectedOdds).toLocaleString()} credits
                 </span>
               </div>
               <div className="flex justify-between mt-1">
                 <span className="text-gray-500">Odds</span>
-                <span className="font-medium">1 : 1</span>
+                <span className="font-medium">{selectedOdds.toFixed(2)}×</span>
               </div>
             </div>
           )}

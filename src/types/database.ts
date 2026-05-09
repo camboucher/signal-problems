@@ -7,8 +7,8 @@ export type Json =
   | Json[]
 
 export type MarketStatus = 'open' | 'closed' | 'settled' | 'cancelled'
-export type MarketOutcome = 'on_time' | 'late'
-export type WagerPrediction = 'on_time' | 'late'
+export type MarketOutcome = 'on_time' | 'late' | 'very_late'
+export type WagerPrediction = 'on_time' | 'late' | 'very_late'
 
 export interface Database {
   public: {
@@ -51,6 +51,9 @@ export interface Database {
           status: MarketStatus
           outcome: MarketOutcome | null
           actual_arrival: string | null
+          on_time_odds: number
+          late_odds: number
+          very_late_odds: number
           created_at: string
           updated_at: string
         }
@@ -65,6 +68,9 @@ export interface Database {
           status?: MarketStatus
           outcome?: MarketOutcome | null
           actual_arrival?: string | null
+          on_time_odds?: number
+          late_odds?: number
+          very_late_odds?: number
           created_at?: string
           updated_at?: string
         }
@@ -78,6 +84,9 @@ export interface Database {
           status?: MarketStatus
           outcome?: MarketOutcome | null
           actual_arrival?: string | null
+          on_time_odds?: number
+          late_odds?: number
+          very_late_odds?: number
           updated_at?: string
         }
         Relationships: []
@@ -89,6 +98,7 @@ export interface Database {
           market_id: string
           prediction: WagerPrediction
           amount: number
+          odds_accepted: number
           payout: number | null
           created_at: string
         }
@@ -98,10 +108,12 @@ export interface Database {
           market_id: string
           prediction: WagerPrediction
           amount: number
+          odds_accepted?: number
           payout?: number | null
           created_at?: string
         }
         Update: {
+          odds_accepted?: number
           payout?: number | null
         }
         Relationships: [

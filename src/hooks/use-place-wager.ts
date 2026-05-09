@@ -9,6 +9,7 @@ interface PlaceWagerArgs {
   userId: string
   prediction: WagerPrediction
   amount: number
+  oddsAccepted: number
   currentBalance: number
 }
 
@@ -21,10 +22,11 @@ export function usePlaceWager() {
       userId,
       prediction,
       amount,
+      oddsAccepted,
       currentBalance,
     }: PlaceWagerArgs) => {
       if (isMockMode()) {
-        applyMockWager({ marketId, userId, prediction, amount })
+        applyMockWager({ marketId, userId, prediction, amount, oddsAccepted })
         return
       }
 
@@ -33,6 +35,7 @@ export function usePlaceWager() {
         market_id: marketId,
         prediction,
         amount,
+        odds_accepted: oddsAccepted,
       })
       if (wagerErr) throw wagerErr
 
