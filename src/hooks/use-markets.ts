@@ -9,6 +9,7 @@ type Market = Database['public']['Tables']['markets']['Row']
 interface MarketsFilter {
   line?: string | null
   search?: string
+  includeAll?: boolean
 }
 
 export function useMarkets(filter: MarketsFilter = {}) {
@@ -20,7 +21,7 @@ export function useMarkets(filter: MarketsFilter = {}) {
       let query = supabase
         .from('markets')
         .select('*')
-        .in('status', ['open', 'closed'])
+        .in('status', filter.includeAll ? ['open', 'closed'] : ['open'])
         .gte(
           'scheduled_arrival',
           new Date(Date.now() - 10 * 60_000).toISOString(),

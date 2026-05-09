@@ -18,6 +18,7 @@ export interface Database {
           id: string
           username: string | null
           credits_balance: number
+          favorite_stop_ids: string[]
           created_at: string
           updated_at: string
         }
@@ -25,6 +26,7 @@ export interface Database {
           id: string
           username?: string | null
           credits_balance?: number
+          favorite_stop_ids?: string[]
           created_at?: string
           updated_at?: string
         }
@@ -32,6 +34,7 @@ export interface Database {
           id?: string
           username?: string | null
           credits_balance?: number
+          favorite_stop_ids?: string[]
           updated_at?: string
         }
         Relationships: []

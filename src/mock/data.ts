@@ -88,13 +88,22 @@ function notifyMockListeners(): void {
   mockListeners.forEach((fn) => fn())
 }
 
-/** Initial profile for MockAuthProvider; balance tracks `mockCreditsBalance`. */
+/** Initial profile for MockAuthProvider; balance and favorites are mutated in place. */
 export const MOCK_PROFILE: Profile = {
   id: MOCK_USER_ID,
   username: 'mockuser',
   credits_balance: 1000,
+  favorite_stop_ids: [],
   created_at: baseCreatedAt(),
   updated_at: new Date().toISOString(),
+}
+
+export function toggleMockFavorite(stopId: string): void {
+  const ids = MOCK_PROFILE.favorite_stop_ids
+  MOCK_PROFILE.favorite_stop_ids = ids.includes(stopId)
+    ? ids.filter((id) => id !== stopId)
+    : [...ids, stopId]
+  notifyMockListeners()
 }
 
 function syncProfileBalance(): void {
@@ -270,6 +279,7 @@ export function getMockWagersForMarket(marketId: string) {
 interface MarketsFilter {
   line?: string | null
   search?: string
+  includeAll?: boolean
 }
 
 export function filterMockMarkets(filter: MarketsFilter): Market[] {

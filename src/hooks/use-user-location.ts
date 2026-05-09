@@ -16,9 +16,34 @@ const MOCK_COORDINATES: Coordinates = {
   lon: -73.987495,
 }
 
+const STORAGE_KEY = 'user-location'
+
+function loadStoredCoordinates(): Coordinates | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (typeof parsed.lat === 'number' && typeof parsed.lon === 'number') {
+      return parsed as Coordinates
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return null
+}
+
+function saveCoordinates(coords: Coordinates): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(coords))
+  } catch {
+    // ignore storage errors (e.g. private browsing quota)
+  }
+}
+
 export function useUserLocation(): UserLocationResult {
-  const [status, setStatus] = useState<UserLocationStatus>('idle')
-  const [coordinates, setCoordinates] = useState<Coordinates | null>(null)
+  const stored = loadStoredCoordinates()
+  const [status, setStatus] = useState<UserLocationStatus>(stored ? 'ready' : 'idle')
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(stored)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const requestLocation = useCallback(() => {
@@ -41,10 +66,9 @@ export function useUserLocation(): UserLocationResult {
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        setCoordinates({
-          lat: coords.latitude,
-          lon: coords.longitude,
-        })
+        const next = { lat: coords.latitude, lon: coords.longitude }
+        saveCoordinates(next)
+        setCoordinates(next)
         setStatus('ready')
       },
       (error) => {

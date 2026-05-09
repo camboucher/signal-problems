@@ -1,17 +1,37 @@
 import { useMemo, useState } from 'react'
 import { useAuth } from '../lib/auth-context'
 import { useMarkets } from '../hooks/use-markets'
+import { useMyWagers } from '../hooks/use-profile'
 import { useUserLocation } from '../hooks/use-user-location'
-import MarketFilters from '../components/markets/MarketFilters'
+import { useFavoriteStops } from '../hooks/use-favorite-stops'
+import MarketFilters, { type ViewMode, type SortBy } from '../components/markets/MarketFilters'
 import MarketCard from '../components/markets/MarketCard'
-import { nearestStations, partitionMarketsByNearbyStops } from '../lib/nearby-stops'
+import { parentStopId, haversineDistanceMeters } from '../lib/nearby-stops'
+import { MTA_STATIONS } from '../lib/mta-stations'
+
+function buildEmptyMessage(
+  viewMode: ViewMode,
+  selectedLine: string | null,
+  search: string,
+): string {
+  if (viewMode === 'wagered') return 'No wagered trains in the current list.'
+  if (viewMode === 'favorited') return 'No trains at your favorited stations.'
+  const parts = ['No upcoming trains']
+  if (selectedLine) parts.push(`for the ${selectedLine} train`)
+  if (search) parts.push(`matching "${search}"`)
+  return parts.join(' ')
+}
 
 function MarketList({
   emptyMessage,
   markets,
+  isFavorite,
+  onToggleFavorite,
 }: Readonly<{
   emptyMessage: string
   markets: ReturnType<typeof useMarkets>['data']
+  isFavorite: (stopId: string) => boolean
+  onToggleFavorite: ((stopId: string) => void) | undefined
 }>) {
   if (!markets?.length) {
     return (
@@ -24,45 +44,65 @@ function MarketList({
   return (
     <div className="space-y-px">
       {markets.map((market) => (
-        <MarketCard key={market.id} market={market} />
+        <MarketCard
+          key={market.id}
+          market={market}
+          isFavorite={isFavorite(parentStopId(market.stop_id))}
+          onToggleFavorite={onToggleFavorite}
+        />
       ))}
     </div>
   )
 }
 
 export default function MarketsPage() {
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
+  const [viewMode, setViewMode] = useState<ViewMode>('open')
+  const [sortBy, setSortBy] = useState<SortBy>('time')
   const [selectedLine, setSelectedLine] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const {
-    coordinates,
-    errorMessage: locationError,
-    requestLocation,
-    status: locationStatus,
-  } = useUserLocation()
 
+  const { coordinates, status: locationStatus, requestLocation } = useUserLocation()
+  const { isFavorite, toggleFavorite, favoriteStopIds } = useFavoriteStops()
   const { data: markets, isLoading, error } = useMarkets({
     line: selectedLine,
     search: search || undefined,
+    includeAll: viewMode === 'all',
   })
-  const allVisibleMarkets = markets ?? []
-  const nearbyStationsList = useMemo(
-    () => (coordinates ? nearestStations(coordinates, 3) : []),
-    [coordinates],
+  const myWagersQuery = useMyWagers(user?.id)
+
+  const wageredMarketIds = useMemo(
+    () => new Set(myWagersQuery.data?.map((w) => w.market_id) ?? []),
+    [myWagersQuery.data],
   )
-  const nearbyStopIds = nearbyStationsList.map((station) => station.stopId)
-  const { nearbyMarkets, allMarkets } = useMemo(
-    () =>
-      coordinates
-        ? partitionMarketsByNearbyStops(allVisibleMarkets, nearbyStopIds)
-        : { nearbyMarkets: [], allMarkets: allVisibleMarkets },
-    [allVisibleMarkets, coordinates, nearbyStopIds],
-  )
-  const nearestStationNames = nearbyStationsList.map((station) => station.name)
-  const allTrainsEmptyMessageParts = ['No upcoming trains']
-  if (selectedLine) allTrainsEmptyMessageParts.push(`for the ${selectedLine} train`)
-  if (search) allTrainsEmptyMessageParts.push(`matching "${search}"`)
-  const allTrainsEmptyMessage = allTrainsEmptyMessageParts.join(' ')
+
+  const displayedMarkets = useMemo(() => {
+    let result = markets ?? []
+
+    if (viewMode === 'wagered') {
+      result = result.filter((m) => wageredMarketIds.has(m.id))
+    } else if (viewMode === 'favorited') {
+      result = result.filter((m) =>
+        favoriteStopIds.includes(parentStopId(m.stop_id)),
+      )
+    }
+
+    if (sortBy === 'distance' && coordinates) {
+      result = [...result].sort((a, b) => {
+        const sa = MTA_STATIONS[parentStopId(a.stop_id)]
+        const sb = MTA_STATIONS[parentStopId(b.stop_id)]
+        if (!sa && !sb) return 0
+        if (!sa) return 1
+        if (!sb) return -1
+        return (
+          haversineDistanceMeters(coordinates, sa) -
+          haversineDistanceMeters(coordinates, sb)
+        )
+      })
+    }
+
+    return result
+  }, [markets, viewMode, sortBy, coordinates, wageredMarketIds, favoriteStopIds])
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -80,95 +120,34 @@ export default function MarketsPage() {
         onLineChange={setSelectedLine}
         search={search}
         onSearchChange={setSearch}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        isAuthenticated={!!user}
+        locationStatus={locationStatus}
+        onRequestLocation={requestLocation}
       />
 
-      <div className="mt-6 space-y-8">
-        <section className="space-y-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-gray-950">
-                Nearby Trains
-              </h2>
-              {locationStatus === 'ready' && nearestStationNames.length > 0 && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Closest stations: {nearestStationNames.join(', ')}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={requestLocation}
-              className="btn-secondary shrink-0"
-            >
-              {locationStatus === 'ready' ? 'Update location' : 'Use my location'}
-            </button>
+      <div className="mt-6">
+        {isLoading && (
+          <div className="text-sm text-gray-400 text-center py-16">
+            Loading trains…
           </div>
-
-          {locationStatus === 'idle' && (
-            <div className="card px-4 py-4 text-sm text-gray-500">
-              Use your location to pin the trains closest to you at the top.
-            </div>
-          )}
-
-          {locationStatus === 'prompting' && (
-            <div className="card px-4 py-4 text-sm text-gray-500">
-              Waiting for your location…
-            </div>
-          )}
-
-          {(locationStatus === 'denied' || locationStatus === 'error') && (
-            <div className="card px-4 py-4 text-sm text-gray-500">
-              {locationError}
-            </div>
-          )}
-
-          {locationStatus === 'ready' && isLoading && (
-            <div className="card px-4 py-4 text-sm text-gray-500">
-              Loading nearby trains…
-            </div>
-          )}
-
-          {locationStatus === 'ready' && error && (
-            <div className="card px-4 py-4 text-sm text-red-500">
-              Failed to load nearby trains
-            </div>
-          )}
-
-          {locationStatus === 'ready' && !isLoading && !error && (
-            <MarketList
-              markets={nearbyMarkets}
-              emptyMessage="No nearby trains in the current list."
-            />
-          )}
-        </section>
-
-        <section className="space-y-3">
-          <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-950">
-              All Trains
-            </h2>
+        )}
+        {error && (
+          <div className="text-sm text-red-500 text-center py-16">
+            Failed to load trains
           </div>
-
-          {isLoading && (
-            <div className="text-sm text-gray-400 text-center py-16">
-              Loading trains…
-            </div>
-          )}
-
-          {error && (
-            <div className="text-sm text-red-500 text-center py-16">
-              Failed to load trains
-            </div>
-          )}
-
-          {!isLoading && !error && (
-            <MarketList
-              markets={locationStatus === 'ready' ? allMarkets : allVisibleMarkets}
-              emptyMessage={allTrainsEmptyMessage}
-            />
-          )}
-        </section>
+        )}
+        {!isLoading && !error && (
+          <MarketList
+            markets={displayedMarkets}
+            emptyMessage={buildEmptyMessage(viewMode, selectedLine, search)}
+            isFavorite={isFavorite}
+            onToggleFavorite={user ? toggleFavorite : undefined}
+          />
+        )}
       </div>
     </div>
   )

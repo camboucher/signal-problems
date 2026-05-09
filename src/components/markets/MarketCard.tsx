@@ -5,7 +5,28 @@ import type { Database } from '../../types/database'
 
 type Market = Database['public']['Tables']['markets']['Row']
 
-export default function MarketCard({ market }: { market: Market }) {
+function StarIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-4 h-4"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinejoin="round"
+    >
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+    </svg>
+  )
+}
+
+interface Props {
+  market: Market
+  isFavorite?: boolean
+  onToggleFavorite?: (stopId: string) => void
+}
+
+export default function MarketCard({ market, isFavorite = false, onToggleFavorite }: Props) {
   const delay = market.latest_predicted_arrival
     ? getDelayMinutes(market.scheduled_arrival, market.latest_predicted_arrival)
     : null
@@ -41,6 +62,23 @@ export default function MarketCard({ market }: { market: Market }) {
             <div className="text-xs text-gray-300">&mdash;</div>
           )}
         </div>
+
+        {onToggleFavorite && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onToggleFavorite(market.stop_id)
+            }}
+            className={`shrink-0 transition-colors ${
+              isFavorite ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'
+            }`}
+            aria-label={isFavorite ? 'Unfavorite station' : 'Favorite station'}
+          >
+            <StarIcon filled={isFavorite} />
+          </button>
+        )}
       </div>
 
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">

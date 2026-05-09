@@ -4,6 +4,16 @@ import { render, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MarketFilters from './MarketFilters'
 
+const DEFAULT_PROPS = {
+  viewMode: 'open' as const,
+  onViewModeChange: () => {},
+  sortBy: 'time' as const,
+  onSortByChange: () => {},
+  isAuthenticated: false,
+  locationStatus: 'idle' as const,
+  onRequestLocation: () => {},
+}
+
 function ControlledSearchWrapper({
   onSearchChange,
 }: {
@@ -12,6 +22,7 @@ function ControlledSearchWrapper({
   const [search, setSearch] = useState('')
   return (
     <MarketFilters
+      {...DEFAULT_PROPS}
       selectedLine={null}
       onLineChange={() => {}}
       search={search}
@@ -29,6 +40,7 @@ describe('MarketFilters', () => {
     const onLineChange = vi.fn()
     const { container } = render(
       <MarketFilters
+        {...DEFAULT_PROPS}
         selectedLine={null}
         onLineChange={onLineChange}
         search=""
@@ -37,7 +49,10 @@ describe('MarketFilters', () => {
     )
     const view = within(container)
 
-    await user.click(view.getByRole('button', { name: 'All' }))
+    // The line-badge "All" button is the one inside the scrollable row
+    const allButtons = view.getAllByRole('button', { name: 'All' })
+    // First is the view mode tab, second is the line-badges "All"
+    await user.click(allButtons[1]!)
     expect(onLineChange).toHaveBeenLastCalledWith(null)
 
     const lineAButtons = view.getAllByRole('button').filter((b) =>

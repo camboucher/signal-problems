@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import MarketsPage from './MarketsPage'
@@ -15,9 +15,50 @@ vi.mock('../hooks/use-user-location', () => ({
   useUserLocation: vi.fn(),
 }))
 
+vi.mock('../hooks/use-profile', () => ({
+  useMyWagers: vi.fn(),
+}))
+
+vi.mock('../hooks/use-favorite-stops', () => ({
+  useFavoriteStops: vi.fn(),
+}))
+
 import { useAuth } from '../lib/auth-context'
 import { useMarkets } from '../hooks/use-markets'
 import { useUserLocation } from '../hooks/use-user-location'
+import { useMyWagers } from '../hooks/use-profile'
+import { useFavoriteStops } from '../hooks/use-favorite-stops'
+
+const MOCK_MARKETS = [
+  {
+    id: 'market-near',
+    trip_id: 'trip-near01',
+    route_id: 'R',
+    stop_id: 'R16N',
+    stop_name: 'Times Sq-42 St',
+    scheduled_arrival: '2025-06-15T14:00:00.000Z',
+    latest_predicted_arrival: '2025-06-15T14:01:00.000Z',
+    status: 'open',
+    outcome: null,
+    actual_arrival: null,
+    created_at: '2025-06-15T13:00:00.000Z',
+    updated_at: '2025-06-15T13:00:00.000Z',
+  },
+  {
+    id: 'market-far',
+    trip_id: 'trip-far001',
+    route_id: 'A',
+    stop_id: 'A02N',
+    stop_name: 'Inwood-207 St',
+    scheduled_arrival: '2025-06-15T14:10:00.000Z',
+    latest_predicted_arrival: '2025-06-15T14:13:00.000Z',
+    status: 'open',
+    outcome: null,
+    actual_arrival: null,
+    created_at: '2025-06-15T13:00:00.000Z',
+    updated_at: '2025-06-15T13:00:00.000Z',
+  },
+]
 
 describe('MarketsPage', () => {
   beforeEach(() => {
@@ -28,6 +69,7 @@ describe('MarketsPage', () => {
         id: 'user-1',
         username: 'rider',
         credits_balance: 1000,
+        favorite_stop_ids: [],
         created_at: '2025-06-15T13:00:00.000Z',
         updated_at: '2025-06-15T13:00:00.000Z',
       },
@@ -40,69 +82,55 @@ describe('MarketsPage', () => {
     })
 
     vi.mocked(useUserLocation).mockReturnValue({
-      coordinates: { lat: 40.75529, lon: -73.987495 },
+      coordinates: null,
       errorMessage: null,
       requestLocation: vi.fn(),
-      status: 'ready',
+      status: 'idle',
     })
 
     vi.mocked(useMarkets).mockReturnValue({
-      data: [
-        {
-          id: 'market-near',
-          trip_id: 'trip-near01',
-          route_id: 'R',
-          stop_id: 'R16N',
-          stop_name: 'Times Sq-42 St',
-          scheduled_arrival: '2025-06-15T14:00:00.000Z',
-          latest_predicted_arrival: '2025-06-15T14:01:00.000Z',
-          status: 'open',
-          outcome: null,
-          actual_arrival: null,
-          created_at: '2025-06-15T13:00:00.000Z',
-          updated_at: '2025-06-15T13:00:00.000Z',
-        },
-        {
-          id: 'market-far',
-          trip_id: 'trip-far001',
-          route_id: 'A',
-          stop_id: 'A02N',
-          stop_name: 'Inwood-207 St',
-          scheduled_arrival: '2025-06-15T14:10:00.000Z',
-          latest_predicted_arrival: '2025-06-15T14:13:00.000Z',
-          status: 'open',
-          outcome: null,
-          actual_arrival: null,
-          created_at: '2025-06-15T13:00:00.000Z',
-          updated_at: '2025-06-15T13:00:00.000Z',
-        },
-      ],
+      data: MOCK_MARKETS,
       isLoading: false,
       error: null,
     } as ReturnType<typeof useMarkets>)
+
+    vi.mocked(useMyWagers).mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useMyWagers>)
+
+    vi.mocked(useFavoriteStops).mockReturnValue({
+      favoriteStopIds: [],
+      isFavorite: () => false,
+      toggleFavorite: vi.fn(),
+    })
   })
 
-  it('splits nearby trains from the full train list', () => {
+  it('renders all markets in a single unified list', () => {
     render(
       <MemoryRouter>
         <MarketsPage />
       </MemoryRouter>,
     )
 
-    const nearbySection = screen
-      .getByRole('heading', { name: 'Nearby Trains' })
-      .closest('section')
-    const allSection = screen
-      .getByRole('heading', { name: 'All Trains' })
-      .closest('section')
+    expect(screen.getByRole('link', { name: /near01/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /far001/i })).toBeInTheDocument()
+  })
 
-    if (!nearbySection || !allSection) {
-      throw new Error('Expected nearby and all trains sections to render')
-    }
+  it('shows loading state while markets are fetching', () => {
+    vi.mocked(useMarkets).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as ReturnType<typeof useMarkets>)
 
-    expect(within(nearbySection).getByRole('link', { name: /near01/i })).toBeInTheDocument()
-    expect(within(nearbySection).queryByRole('link', { name: /far001/i })).not.toBeInTheDocument()
-    expect(within(allSection).getByRole('link', { name: /far001/i })).toBeInTheDocument()
-    expect(within(allSection).queryByRole('link', { name: /near01/i })).not.toBeInTheDocument()
+    render(
+      <MemoryRouter>
+        <MarketsPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText(/loading trains/i)).toBeInTheDocument()
   })
 })
