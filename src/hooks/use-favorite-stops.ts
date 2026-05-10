@@ -3,9 +3,10 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth-context'
 import { isMockMode } from '../lib/mock-mode'
 import { toggleMockFavorite } from '../mock/data'
+import { parentStopId } from '../lib/nearby-stops'
 
 export function useFavoriteStops() {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, patchProfile } = useAuth()
 
   const favoriteStopIds: string[] = profile?.favorite_stop_ids ?? []
 
@@ -15,22 +16,33 @@ export function useFavoriteStops() {
   )
 
   const toggleFavorite = useCallback(
-    async (stopId: string) => {
+    async (rawStopId: string): Promise<Error | undefined> => {
+      const stopId = parentStopId(rawStopId)
+
       if (isMockMode()) {
         toggleMockFavorite(stopId)
         return
       }
       if (!user) return
-      const next = favoriteStopIds.includes(stopId)
-        ? favoriteStopIds.filter((id) => id !== stopId)
-        : [...favoriteStopIds, stopId]
+
+      const previous = favoriteStopIds
+      const next = previous.includes(stopId)
+        ? previous.filter((id) => id !== stopId)
+        : [...previous, stopId]
+
+      patchProfile({ favorite_stop_ids: next })
+
       const { error } = await supabase
         .from('profiles')
         .update({ favorite_stop_ids: next })
         .eq('id', user.id)
-      if (!error) await refreshProfile()
+
+      if (error) {
+        patchProfile({ favorite_stop_ids: previous })
+        return error
+      }
     },
-    [user, favoriteStopIds, refreshProfile],
+    [user, favoriteStopIds, patchProfile],
   )
 
   return { favoriteStopIds, isFavorite, toggleFavorite }

@@ -1,7 +1,73 @@
 import { useParams, Link } from 'react-router-dom'
+import * as Tabs from '@radix-ui/react-tabs'
 import { useAuth } from '../lib/auth-context'
 import { useProfile } from '../hooks/use-profile'
+import { useProfileStats } from '../hooks/use-profile-stats'
 import WagerHistory from '../components/wagers/WagerHistory'
+import StatCard from '../components/stats/StatCard'
+import LineBreakdownTable from '../components/stats/LineBreakdownTable'
+import TimeOfDayChart from '../components/stats/TimeOfDayChart'
+
+const MIN_SETTLED_FOR_STATS = 5
+
+function ProfileStats({ wagers, isLoading }: {
+  wagers: ReturnType<typeof useProfile>['wagersQuery']['data']
+  isLoading: boolean
+}) {
+  const stats = useProfileStats(wagers ?? [])
+  const settled = (wagers ?? []).filter((w) => w.markets.status === 'settled' && w.payout !== null)
+
+  if (isLoading) {
+    return <div className="text-sm text-gray-400 text-center py-12">Loading stats…</div>
+  }
+
+  if (settled.length < MIN_SETTLED_FOR_STATS) {
+    return (
+      <div className="text-sm text-gray-400 text-center py-12 border border-dashed border-gray-200">
+        Place more wagers to see your stats
+        <p className="text-xs mt-1">({MIN_SETTLED_FOR_STATS - settled.length} more settled wager{MIN_SETTLED_FOR_STATS - settled.length !== 1 ? 's' : ''} needed)</p>
+      </div>
+    )
+  }
+
+  const roiLabel = stats.streak.type
+    ? `${stats.streak.current} ${stats.streak.type}${stats.streak.current !== 1 ? 's' : ''}`
+    : '—'
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard
+          label="Avg Wager"
+          value={Math.round(stats.avgWagerSize).toLocaleString()}
+        />
+        <StatCard
+          label="Current Streak"
+          value={roiLabel}
+          valueClass={stats.streak.type === 'win' ? 'text-emerald-600' : stats.streak.type === 'loss' ? 'text-red-500' : ''}
+        />
+        <StatCard
+          label="Longest Streak"
+          value={stats.streak.longest > 0 ? `${stats.streak.longest}` : '—'}
+        />
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">ROI by Line</p>
+        <div className="card px-4 py-3">
+          <LineBreakdownTable lines={stats.roiByLine} />
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">Win Rate by Time of Day</p>
+        <div className="card px-4 py-4">
+          <TimeOfDayChart data={stats.winRateByTimeOfDay} />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>()
@@ -101,16 +167,40 @@ export default function ProfilePage() {
         </p>
       )}
 
-      {/* Wager history */}
+      {/* Tabs */}
       <div className="mt-6">
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
-          Recent Wagers
-        </p>
-        <WagerHistory
-          wagers={wagers}
-          isLoading={wagersQuery.isLoading}
-          emptyMessage={`${profile.username} hasn't placed any wagers yet`}
-        />
+        <Tabs.Root defaultValue="history">
+          <Tabs.List className="flex gap-4 border-b border-gray-100 mb-4">
+            <Tabs.Trigger
+              value="history"
+              className="text-xs font-medium uppercase tracking-wide pb-2 text-gray-400 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-gray-900 transition-colors"
+            >
+              Wager History
+            </Tabs.Trigger>
+            {isOwnProfile && (
+              <Tabs.Trigger
+                value="stats"
+                className="text-xs font-medium uppercase tracking-wide pb-2 text-gray-400 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-gray-900 transition-colors"
+              >
+                Stats
+              </Tabs.Trigger>
+            )}
+          </Tabs.List>
+
+          <Tabs.Content value="history">
+            <WagerHistory
+              wagers={wagers}
+              isLoading={wagersQuery.isLoading}
+              emptyMessage={`${profile.username} hasn't placed any wagers yet`}
+            />
+          </Tabs.Content>
+
+          {isOwnProfile && (
+            <Tabs.Content value="stats">
+              <ProfileStats wagers={wagersQuery.data} isLoading={wagersQuery.isLoading} />
+            </Tabs.Content>
+          )}
+        </Tabs.Root>
       </div>
     </div>
   )

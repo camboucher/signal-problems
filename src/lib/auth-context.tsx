@@ -15,6 +15,7 @@ export interface AuthContextValue {
   signOut: () => Promise<void>
   updateUsername: (username: string) => Promise<{ error: Error | null }>
   refreshProfile: () => Promise<void>
+  patchProfile: (patch: Partial<Profile>) => void
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
@@ -83,6 +84,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error }
   }
 
+  function patchProfile(patch: Partial<Profile>) {
+    setProfile(prev => prev ? { ...prev, ...patch } : prev)
+  }
+
   return (
     <AuthContext.Provider value={{
       session,
@@ -94,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       updateUsername,
       refreshProfile,
+      patchProfile,
     }}>
       {children}
     </AuthContext.Provider>

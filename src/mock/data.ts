@@ -29,10 +29,6 @@ const MARKET_IDS = [
   '10000000-0000-4000-8000-000000000006',
 ] as const
 
-function isoPlusMinutes(mins: number): string {
-  return new Date(Date.now() + mins * 60_000).toISOString()
-}
-
 function baseCreatedAt(): string {
   return new Date(Date.now() - 7 * 24 * 60 * 60_000).toISOString()
 }
@@ -118,7 +114,15 @@ function syncProfileBalance(): void {
   MOCK_PROFILE.credits_balance = mockCreditsBalance
 }
 
+function daysAgo(d: number, hour = 12): string {
+  const t = new Date()
+  t.setDate(t.getDate() - d)
+  t.setHours(hour, 0, 0, 0)
+  return t.toISOString()
+}
+
 const initialWagers: Wager[] = [
+  // Other users (open wagers)
   {
     id: '20000000-0000-4000-8000-000000000001',
     user_id: OTHER_USER_IDS.transitqueen,
@@ -128,16 +132,6 @@ const initialWagers: Wager[] = [
     odds_accepted: 1.62,
     payout: null,
     created_at: new Date(Date.now() - 3_600_000).toISOString(),
-  },
-  {
-    id: '20000000-0000-4000-8000-000000000002',
-    user_id: MOCK_USER_ID,
-    market_id: MARKET_IDS[0]!,
-    prediction: 'late',
-    amount: 100,
-    odds_accepted: 3.17,
-    payout: null,
-    created_at: new Date(Date.now() - 3_000_000).toISOString(),
   },
   {
     id: '20000000-0000-4000-8000-000000000003',
@@ -158,6 +152,122 @@ const initialWagers: Wager[] = [
     odds_accepted: 9.5,
     payout: null,
     created_at: new Date(Date.now() - 2_500_000).toISOString(),
+  },
+  // Mock user — open wager
+  {
+    id: '20000000-0000-4000-8000-000000000002',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[0]!,
+    prediction: 'late',
+    amount: 100,
+    odds_accepted: 3.17,
+    payout: null,
+    created_at: new Date(Date.now() - 3_000_000).toISOString(),
+  },
+  // Mock user — settled wagers for analytics (A line)
+  {
+    id: '20000000-0000-4000-8000-000000000010',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[0]!,
+    prediction: 'on_time',
+    amount: 80,
+    odds_accepted: 1.62,
+    payout: 129,
+    created_at: daysAgo(14, 8),
+  },
+  {
+    id: '20000000-0000-4000-8000-000000000011',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[0]!,
+    prediction: 'late',
+    amount: 60,
+    odds_accepted: 2.85,
+    payout: 0,
+    created_at: daysAgo(12, 9),
+  },
+  {
+    id: '20000000-0000-4000-8000-000000000012',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[0]!,
+    prediction: 'on_time',
+    amount: 100,
+    odds_accepted: 1.55,
+    payout: 155,
+    created_at: daysAgo(10, 7),
+  },
+  // Mock user — settled wagers (N line, afternoon)
+  {
+    id: '20000000-0000-4000-8000-000000000013',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[4]!,
+    prediction: 'on_time',
+    amount: 150,
+    odds_accepted: 1.48,
+    payout: 0,
+    created_at: daysAgo(9, 14),
+  },
+  {
+    id: '20000000-0000-4000-8000-000000000014',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[4]!,
+    prediction: 'late',
+    amount: 75,
+    odds_accepted: 3.10,
+    payout: 232,
+    created_at: daysAgo(7, 15),
+  },
+  // Mock user — settled wagers (L line, evening)
+  {
+    id: '20000000-0000-4000-8000-000000000015',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[3]!,
+    prediction: 'late',
+    amount: 120,
+    odds_accepted: 2.70,
+    payout: 324,
+    created_at: daysAgo(6, 19),
+  },
+  {
+    id: '20000000-0000-4000-8000-000000000016',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[3]!,
+    prediction: 'late',
+    amount: 90,
+    odds_accepted: 2.70,
+    payout: 0,
+    created_at: daysAgo(4, 20),
+  },
+  // Mock user — settled wagers (6 line, night)
+  {
+    id: '20000000-0000-4000-8000-000000000017',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[5]!,
+    prediction: 'on_time',
+    amount: 50,
+    odds_accepted: 1.80,
+    payout: 90,
+    created_at: daysAgo(3, 23),
+  },
+  {
+    id: '20000000-0000-4000-8000-000000000018',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[5]!,
+    prediction: 'on_time',
+    amount: 70,
+    odds_accepted: 1.80,
+    payout: 126,
+    created_at: daysAgo(2, 22),
+  },
+  // Mock user — settled wagers (1 line, morning)
+  {
+    id: '20000000-0000-4000-8000-000000000019',
+    user_id: MOCK_USER_ID,
+    market_id: MARKET_IDS[2]!,
+    prediction: 'late',
+    amount: 200,
+    odds_accepted: 4.20,
+    payout: 0,
+    created_at: daysAgo(1, 10),
   },
 ]
 
@@ -236,11 +346,17 @@ export function getMockWagersForUser(userId: string) {
       const m = buildMockMarkets().find((mk) => mk.id === w.market_id)
       const route = m?.route_id ?? 'A'
       const stop = m?.stop_name ?? 'Unknown'
-      const sched = m?.scheduled_arrival ?? isoPlusMinutes(30)
+      const sched = w.created_at
+      const settled = w.payout !== null
+      const won = settled && (w.payout ?? 0) > w.amount
+      const prediction = w.prediction as WagerPrediction
+      const outcome: MarketOutcome | null = settled
+        ? (won ? (prediction === 'on_time' ? 'on_time' : 'late') : (prediction === 'on_time' ? 'late' : 'on_time'))
+        : null
       return {
         id: w.id,
         market_id: w.market_id,
-        prediction: w.prediction as WagerPrediction,
+        prediction,
         amount: w.amount,
         payout: w.payout,
         created_at: w.created_at,
@@ -248,8 +364,8 @@ export function getMockWagersForUser(userId: string) {
           route_id: route,
           stop_name: stop,
           scheduled_arrival: sched,
-          outcome: null as MarketOutcome | null,
-          status: 'open' as MarketStatus,
+          outcome,
+          status: (settled ? 'settled' : 'open') as MarketStatus,
         },
       }
     })

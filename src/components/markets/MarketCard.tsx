@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import LineBadge from '../mta/LineBadge'
 import { formatTime, getDelayMinutes } from '../../lib/mta'
@@ -23,13 +24,26 @@ function StarIcon({ filled }: { filled: boolean }) {
 interface Props {
   market: Market
   isFavorite?: boolean
-  onToggleFavorite?: (stopId: string) => void
+  onToggleFavorite?: (stopId: string) => Promise<Error | undefined>
 }
 
 export default function MarketCard({ market, isFavorite = false, onToggleFavorite }: Props) {
+  const [toggleError, setToggleError] = useState(false)
+
   const delay = market.latest_predicted_arrival
     ? getDelayMinutes(market.scheduled_arrival, market.latest_predicted_arrival)
     : null
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!onToggleFavorite) return
+    const err = await onToggleFavorite(market.stop_id)
+    if (err) {
+      setToggleError(true)
+      setTimeout(() => setToggleError(false), 2000)
+    }
+  }
 
   return (
     <Link
@@ -66,13 +80,13 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
         {onToggleFavorite && (
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onToggleFavorite(market.stop_id)
-            }}
+            onClick={handleToggleFavorite}
             className={`shrink-0 transition-colors ${
-              isFavorite ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'
+              toggleError
+                ? 'text-red-400'
+                : isFavorite
+                  ? 'text-yellow-400'
+                  : 'text-gray-300 hover:text-yellow-400'
             }`}
             aria-label={isFavorite ? 'Unfavorite station' : 'Favorite station'}
           >

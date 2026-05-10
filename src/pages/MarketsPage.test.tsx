@@ -79,6 +79,7 @@ describe('MarketsPage', () => {
       signOut: vi.fn(),
       updateUsername: vi.fn(),
       refreshProfile: vi.fn(),
+      patchProfile: vi.fn(),
     })
 
     vi.mocked(useUserLocation).mockReturnValue({

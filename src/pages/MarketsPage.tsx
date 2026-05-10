@@ -31,7 +31,7 @@ function MarketList({
   emptyMessage: string
   markets: ReturnType<typeof useMarkets>['data']
   isFavorite: (stopId: string) => boolean
-  onToggleFavorite: ((stopId: string) => void) | undefined
+  onToggleFavorite: ((stopId: string) => Promise<Error | undefined>) | undefined
 }>) {
   if (!markets?.length) {
     return (

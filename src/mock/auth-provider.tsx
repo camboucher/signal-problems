@@ -58,6 +58,10 @@ export function MockAuthProvider({ children }: { children: ReactNode }) {
         return { error: null }
       },
       refreshProfile: async () => {},
+      patchProfile: (patch) => {
+        Object.assign(MOCK_PROFILE, patch)
+        setTick((t) => t + 1)
+      },
     }),
     [profile],
   )
