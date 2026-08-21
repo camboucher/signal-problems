@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/auth-context'
 import { MockAuthProvider } from './mock/auth-provider'
+import { isMockMode } from './lib/mock-mode'
 import AppLayout from './components/layout/AppLayout'
 import RequireAuth from './components/auth/RequireAuth'
 import RequireUsername from './components/auth/RequireUsername'
@@ -25,8 +26,7 @@ function PageLoading() {
   )
 }
 
-const AppAuthProvider =
-  import.meta.env.VITE_MOCK_MODE === 'true' ? MockAuthProvider : AuthProvider
+const AppAuthProvider = isMockMode() ? MockAuthProvider : AuthProvider
 
 export default function App() {
   return (

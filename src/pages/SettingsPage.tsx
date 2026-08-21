@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
 import { supabase } from '../lib/supabase'
+import { isMockMode, isRuntimeDemoMode, exitDemoMode } from '../lib/mock-mode'
 import { useMyWagers } from '../hooks/use-profile'
 import WagerHistory from '../components/wagers/WagerHistory'
 
@@ -34,6 +35,14 @@ export default function SettingsPage() {
     if (!newEmail.trim()) return
     setEmailLoading(true)
     setEmailMsg(null)
+
+    if (isMockMode()) {
+      setEmailLoading(false)
+      setEmailMsg({ type: 'success', text: 'Demo mode — email changes are not saved.' })
+      setNewEmail('')
+      return
+    }
+
     const { error } = await supabase.auth.updateUser({ email: newEmail.trim() })
     setEmailLoading(false)
     if (error) {
@@ -59,6 +68,15 @@ export default function SettingsPage() {
     }
     setPasswordLoading(true)
     setPasswordMsg(null)
+
+    if (isMockMode()) {
+      setPasswordLoading(false)
+      setPasswordMsg({ type: 'success', text: 'Demo mode — password changes are not saved.' })
+      setNewPassword('')
+      setConfirmPassword('')
+      return
+    }
+
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     setPasswordLoading(false)
     if (error) {
@@ -71,6 +89,10 @@ export default function SettingsPage() {
   }
 
   async function handleSignOut() {
+    if (isRuntimeDemoMode()) {
+      exitDemoMode()
+      return
+    }
     await signOut()
     navigate('/login')
   }
@@ -197,7 +219,7 @@ export default function SettingsPage() {
       {/* Sign out */}
       <section>
         <button onClick={handleSignOut} className="btn-danger w-full">
-          Sign out
+          {isRuntimeDemoMode() ? 'Exit demo' : 'Sign out'}
         </button>
       </section>
     </div>

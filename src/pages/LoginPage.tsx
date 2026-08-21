@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
+import { enterDemoMode } from '../lib/mock-mode'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
@@ -80,6 +81,19 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
+
+        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+          <button
+            type="button"
+            onClick={enterDemoMode}
+            className="text-sm text-gray-500 hover:text-gray-950 underline underline-offset-2"
+          >
+            Just looking? Try the live demo →
+          </button>
+          <p className="text-xs text-gray-400 mt-1">
+            Sample data, no signup — nothing you do here is saved.
+          </p>
+        </div>
       </div>
     </div>
   )

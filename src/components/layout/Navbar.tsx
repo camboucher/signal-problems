@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth-context'
+import { isRuntimeDemoMode, exitDemoMode } from '../../lib/mock-mode'
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
   return `text-sm transition-colors ${isActive ? 'text-gray-950 font-medium' : 'text-gray-500 hover:text-gray-950'}`
@@ -10,6 +11,10 @@ export default function Navbar() {
   const navigate = useNavigate()
 
   async function handleSignOut() {
+    if (isRuntimeDemoMode()) {
+      exitDemoMode()
+      return
+    }
     await signOut()
     navigate('/login')
   }
@@ -48,7 +53,7 @@ export default function Navbar() {
                 onClick={handleSignOut}
                 className="text-sm text-gray-400 hover:text-gray-950 transition-colors"
               >
-                Sign out
+                {isRuntimeDemoMode() ? 'Exit demo' : 'Sign out'}
               </button>
             </>
           ) : (
