@@ -71,14 +71,15 @@ export default function BottomNav() {
   const { user, profile } = useAuth()
   const profilePath = user ? `/profile/${profile?.username ?? user.id}` : '/login'
 
+  // Fixed "signage" bar like Navbar — stays dark regardless of theme.
   const linkClass = (isActive: boolean) =>
     `flex flex-col items-center gap-0.5 pt-2 pb-1 px-3 transition-colors ${
-      isActive ? 'text-gray-950' : 'text-gray-400'
+      isActive ? 'text-[#ffb800]' : 'text-[#8b8d9e]'
     }`
   const labelClass = 'text-[9px] font-bold uppercase tracking-widest'
 
   return (
-    <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-20 flex justify-around safe-bottom">
+    <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-[#0c0d12] border-t-[3px] border-[#ffb800] z-20 flex justify-around safe-bottom">
       <NavLink to="/" end className={({ isActive }) => linkClass(isActive)}>
         {({ isActive }) => (
           <>

@@ -80,7 +80,7 @@ export default function MarketFilters({
             onClick={() => onLineChange(selectedLine === line ? null : line)}
             className={`shrink-0 rounded-full ${
               selectedLine === line
-                ? 'ring-2 ring-gray-950 ring-offset-1'
+                ? 'ring-2 ring-sp-accent ring-offset-1 ring-offset-sp-bg'
                 : 'opacity-80 hover:opacity-100'
             }`}
           >

@@ -2,6 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Solid hex tokens (used directly) plus "-rgb" channel triples, which let
+   Tailwind's color-opacity modifiers (e.g. bg-sp-accent/10) work against a
+   CSS custom property — see tailwind.config.js. */
+:root {
+  --sp-bg: #0c0d12;         --sp-bg-rgb: 12 13 18;
+  --sp-panel: #161826;      --sp-panel-rgb: 22 24 38;
+  --sp-panel2: #1d2032;     --sp-panel2-rgb: 29 32 50;
+  --sp-edge: rgba(233, 233, 237, 0.12);
+  --sp-text: #e9e9ed;       --sp-text-rgb: 233 233 237;
+  --sp-dim: #8b8d9e;        --sp-dim-rgb: 139 141 158;
+  --sp-accent: #9184d9;     --sp-accent-rgb: 145 132 217;
+  --sp-led: #ffb800;        --sp-led-rgb: 255 184 0;
+  --sp-on: #3ad07e;         --sp-on-rgb: 58 208 126;
+  --sp-late: #ffb020;       --sp-late-rgb: 255 176 32;
+  --sp-very: #ff5247;       --sp-very-rgb: 255 82 71;
+  --sp-sign: #0c0d12;       --sp-sign-rgb: 12 13 18;
+}
+
+/* System preference wins only when no explicit choice has been made */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --sp-bg: #eceae4;       --sp-bg-rgb: 236 234 228;
+    --sp-panel: #ffffff;    --sp-panel-rgb: 255 255 255;
+    --sp-panel2: #f5f4f0;   --sp-panel2-rgb: 245 244 240;
+    --sp-edge: rgba(12, 13, 18, 0.14);
+    --sp-text: #16171f;     --sp-text-rgb: 22 23 31;
+    --sp-dim: #6b6d7a;      --sp-dim-rgb: 107 109 122;
+    --sp-accent: #5b4fb0;   --sp-accent-rgb: 91 79 176;
+    --sp-led: #8a5a00;      --sp-led-rgb: 138 90 0;
+    --sp-on: #00933c;       --sp-on-rgb: 0 147 60;
+    --sp-late: #b26a00;     --sp-late-rgb: 178 106 0;
+    --sp-very: #d0342c;     --sp-very-rgb: 208 52 44;
+    --sp-sign: #0c0d12;     --sp-sign-rgb: 12 13 18;
+  }
+}
+
+:root[data-theme="light"] {
+  --sp-bg: #eceae4;       --sp-bg-rgb: 236 234 228;
+  --sp-panel: #ffffff;    --sp-panel-rgb: 255 255 255;
+  --sp-panel2: #f5f4f0;   --sp-panel2-rgb: 245 244 240;
+  --sp-edge: rgba(12, 13, 18, 0.14);
+  --sp-text: #16171f;     --sp-text-rgb: 22 23 31;
+  --sp-dim: #6b6d7a;      --sp-dim-rgb: 107 109 122;
+  --sp-accent: #5b4fb0;   --sp-accent-rgb: 91 79 176;
+  --sp-led: #8a5a00;      --sp-led-rgb: 138 90 0;
+  --sp-on: #00933c;       --sp-on-rgb: 0 147 60;
+  --sp-late: #b26a00;     --sp-late-rgb: 178 106 0;
+  --sp-very: #d0342c;     --sp-very-rgb: 208 52 44;
+  --sp-sign: #0c0d12;     --sp-sign-rgb: 12 13 18;
+}
+
+@keyframes sp-flip {
+  0% { transform: rotateX(-88deg); opacity: 0.25; }
+  55% { transform: rotateX(8deg); opacity: 1; }
+  100% { transform: rotateX(0); opacity: 1; }
+}
+@keyframes sp-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes sp-blink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0.2; }
+}
+@keyframes sp-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(145, 132, 217, 0); }
+  50% { box-shadow: 0 0 22px 1px rgba(145, 132, 217, 0.3); }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -14,6 +83,15 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  .animate-sp-marquee {
+    animation: sp-marquee 34s linear infinite;
+  }
+  .animate-sp-blink {
+    animation: sp-blink 1.6s steps(1, end) infinite;
+  }
+  .animate-sp-glow {
+    animation: sp-glow 3.4s ease-in-out infinite;
+  }
 }
 
 @layer base {
@@ -22,42 +100,49 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-950 font-sans antialiased;
-    font-feature-settings: "tnum" on, "lnum" on;
+    background: var(--sp-bg);
+    color: var(--sp-text);
+    font-family: '"Helvetica Neue"', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
   }
 
   /* Tabular numbers for time displays */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  ::selection {
+    background: rgba(145, 132, 217, 0.35);
+  }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--sp-bg)] disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-primary {
-    @apply btn bg-gray-950 text-white hover:bg-gray-800 focus:ring-gray-950;
+    @apply btn bg-sp-accent text-sp-sign hover:opacity-90 focus:ring-sp-accent;
   }
 
   .btn-secondary {
-    @apply btn bg-white text-gray-950 border border-gray-300 hover:bg-gray-50 focus:ring-gray-950;
+    @apply btn bg-transparent text-sp-text border border-sp-edge hover:border-sp-accent hover:text-sp-accent focus:ring-sp-accent;
   }
 
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-600;
+    @apply btn bg-transparent text-sp-very border border-sp-very/40 hover:bg-sp-very/10 focus:ring-sp-very;
   }
 
   .input {
-    @apply block w-full px-3 py-2 text-sm border border-gray-300 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-950 focus:border-transparent;
+    @apply block w-full px-3 py-2 text-sm border border-sp-edge bg-sp-panel text-sp-text placeholder:text-sp-dim focus:outline-none focus:ring-2 focus:ring-sp-accent focus:border-transparent;
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-sp-dim mb-1;
   }
 
   .card {
-    @apply bg-white border border-gray-200;
+    @apply bg-sp-panel border border-sp-edge;
   }
 }

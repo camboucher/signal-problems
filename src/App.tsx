@@ -1,12 +1,13 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './lib/auth-context'
+import { AuthProvider, useAuth } from './lib/auth-context'
 import { MockAuthProvider } from './mock/auth-provider'
 import { isMockMode } from './lib/mock-mode'
 import AppLayout from './components/layout/AppLayout'
 import RequireAuth from './components/auth/RequireAuth'
 import RequireUsername from './components/auth/RequireUsername'
 import MarketsPage from './pages/MarketsPage'
+import LandingPage from './pages/LandingPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))
@@ -28,6 +29,23 @@ function PageLoading() {
 
 const AppAuthProvider = isMockMode() ? MockAuthProvider : AuthProvider
 
+/** `/` shows the public marketing page to signed-out visitors, and the
+ *  trains list (inside the normal app chrome) to signed-in users. */
+function HomeRoute() {
+  const { user, loading } = useAuth()
+
+  if (loading) return <PageLoading />
+  if (!user) return <LandingPage />
+
+  return (
+    <AppLayout>
+      <RequireUsername>
+        <MarketsPage />
+      </RequireUsername>
+    </AppLayout>
+  )
+}
+
 export default function App() {
   return (
     <AppAuthProvider>
@@ -47,19 +65,11 @@ export default function App() {
             }
           />
 
+          {/* Public marketing page (signed out) / trains list (signed in) */}
+          <Route path="/" element={<HomeRoute />} />
+
           {/* App routes with nav */}
           <Route element={<AppLayout />}>
-            <Route
-              path="/"
-              element={
-                <RequireAuth>
-                  <RequireUsername>
-                    <MarketsPage />
-                  </RequireUsername>
-                </RequireAuth>
-              }
-            />
-
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/market/:id" element={<MarketDetailPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />

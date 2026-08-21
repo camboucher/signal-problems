@@ -48,32 +48,38 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
   return (
     <Link
       to={`/market/${market.id}`}
-      className="card block px-4 py-3 hover:bg-gray-50 transition-colors"
+      className="card block px-4 py-3 hover:bg-sp-panel2 transition-colors"
     >
       <div className="flex items-center gap-3">
         <LineBadge line={market.route_id} />
 
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium truncate">{market.stop_name}</div>
-          <div className="text-xs text-gray-400 mt-0.5">
+          <div className="text-[11px] text-sp-dim mt-0.5 uppercase tracking-wide">
             {market.route_id} train&ensp;·&ensp;{market.trip_id.slice(-6)}
           </div>
         </div>
 
+        <div className="hidden xs:flex shrink-0 gap-1">
+          <OddsPill value={market.on_time_odds} color="text-sp-on" border="border-sp-on/35" />
+          <OddsPill value={market.late_odds} color="text-sp-late" border="border-sp-late/35" />
+          <OddsPill value={market.very_late_odds} color="text-sp-very" border="border-sp-very/35" />
+        </div>
+
         <div className="text-right shrink-0">
-          <div className="text-sm font-bold tabular-nums">
+          <div className="text-sm font-bold tabular-nums text-sp-led">
             {formatTime(market.scheduled_arrival)}
           </div>
           {delay !== null && delay > 0 && (
-            <div className="text-xs text-red-500 font-medium tabular-nums">
+            <div className="text-xs text-sp-very font-medium tabular-nums">
               +{delay} min
             </div>
           )}
           {delay !== null && delay <= 0 && (
-            <div className="text-xs text-emerald-500 font-medium">on time</div>
+            <div className="text-xs text-sp-on font-medium">on time</div>
           )}
           {delay === null && (
-            <div className="text-xs text-gray-300">&mdash;</div>
+            <div className="text-xs text-sp-dim">&mdash;</div>
           )}
         </div>
 
@@ -83,10 +89,10 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
             onClick={handleToggleFavorite}
             className={`shrink-0 transition-colors ${
               toggleError
-                ? 'text-red-400'
+                ? 'text-sp-very'
                 : isFavorite
-                  ? 'text-yellow-400'
-                  : 'text-gray-300 hover:text-yellow-400'
+                  ? 'text-sp-led'
+                  : 'text-sp-dim hover:text-sp-led'
             }`}
             aria-label={isFavorite ? 'Unfavorite station' : 'Favorite station'}
           >
@@ -95,20 +101,36 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
         )}
       </div>
 
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-sp-edge">
         <span
           className={`text-[10px] font-bold uppercase tracking-wider ${
-            market.status === 'open' ? 'text-emerald-500' : 'text-gray-400'
+            market.status === 'open' ? 'text-sp-on' : 'text-sp-dim'
           }`}
         >
           {market.status}
         </span>
         {market.latest_predicted_arrival && (
-          <span className="text-[10px] text-gray-400 tabular-nums">
+          <span className="text-[10px] text-sp-dim tabular-nums">
             ETA {formatTime(market.latest_predicted_arrival)}
           </span>
         )}
       </div>
     </Link>
+  )
+}
+
+function OddsPill({
+  value,
+  color,
+  border,
+}: {
+  value: number | null | undefined
+  color: string
+  border: string
+}) {
+  return (
+    <span className={`min-w-[46px] text-center py-1 border text-[11px] font-bold tabular-nums ${color} ${border}`}>
+      {typeof value === 'number' ? `${value.toFixed(2)}×` : '—'}
+    </span>
   )
 }

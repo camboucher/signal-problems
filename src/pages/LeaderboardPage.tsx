@@ -50,7 +50,7 @@ export default function LeaderboardPage() {
       )}
 
       {error && (
-        <div className="text-sm text-red-500 text-center py-16 border border-dashed border-red-100">
+        <div className="text-sm text-sp-very text-center py-16 border border-dashed border-sp-very/30">
           Failed to load leaderboard
         </div>
       )}
@@ -65,7 +65,7 @@ export default function LeaderboardPage() {
         <div className="card divide-y divide-gray-100">
           {data.map((entry, i) => {
             const rankColor =
-              i === 0 ? 'text-gray-950' : i <= 2 ? 'text-gray-500' : 'text-gray-300'
+              i === 0 ? 'text-sp-led' : i <= 2 ? 'text-sp-text' : 'text-sp-dim'
             return (
             <Link
               key={entry.user_id}

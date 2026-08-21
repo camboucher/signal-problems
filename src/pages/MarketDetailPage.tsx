@@ -59,16 +59,19 @@ export default function MarketDetailPage() {
     refreshProfile()
   }
 
+  // The ticket box below is a fixed dark "signage" surface (like Navbar) —
+  // these colors are hardcoded rather than pulled from the theme-reactive
+  // sp-* tokens, which would go dark-on-dark in light theme.
   const statusColor: Record<string, string> = {
-    open: 'text-emerald-500',
-    closed: 'text-amber-500',
-    settled: 'text-gray-500',
-    cancelled: 'text-gray-400',
+    open: 'text-[#3ad07e]',
+    closed: 'text-[#ffb020]',
+    settled: 'text-[#8b8d9e]',
+    cancelled: 'text-[#8b8d9e]',
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <Link to="/" className="text-sm text-gray-400 hover:text-gray-600">
+      <Link to="/" className="text-sm text-sp-dim hover:text-sp-accent">
         ← Back to markets
       </Link>
 
@@ -77,31 +80,31 @@ export default function MarketDetailPage() {
         <LineBadge line={m.route_id} size="lg" />
         <div>
           <h1 className="text-lg font-bold tracking-tight">{m.stop_name}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-sp-dim mt-0.5 uppercase tracking-wide">
             {m.route_id} train&ensp;·&ensp;Trip {m.trip_id.slice(-6)}
           </p>
         </div>
       </div>
 
-      {/* Time info card */}
-      <div className="card mt-5 divide-y divide-gray-100">
-        <Row label="Scheduled">
-          <span className="text-sm font-bold tabular-nums">
+      {/* Ticket: scheduled / predicted / status — fixed dark signage surface */}
+      <div className="mt-5 border border-[#ffb800]/30 bg-[#0c0d12] divide-y divide-[#ffb800]/20">
+        <Row label="Scheduled" ticket>
+          <span className="text-sm font-bold tabular-nums text-[#e9e9ed]">
             {formatTime(m.scheduled_arrival)}
           </span>
         </Row>
 
         {m.latest_predicted_arrival && (
-          <Row label="Predicted">
-            <span className="text-sm tabular-nums">
+          <Row label="Predicted" ticket>
+            <span className="text-sm tabular-nums text-[#ffb800]">
               {formatTime(m.latest_predicted_arrival)}
               {delay !== null && delay > 0 && (
-                <span className="text-red-500 font-medium ml-2">
+                <span className="text-[#ff5247] font-medium ml-2">
                   +{delay} min
                 </span>
               )}
               {delay !== null && delay <= 0 && (
-                <span className="text-emerald-500 font-medium ml-2">
+                <span className="text-[#3ad07e] font-medium ml-2">
                   on time
                 </span>
               )}
@@ -110,30 +113,30 @@ export default function MarketDetailPage() {
         )}
 
         {m.actual_arrival && (
-          <Row label="Actual">
-            <span className="text-sm font-bold tabular-nums">
+          <Row label="Actual" ticket>
+            <span className="text-sm font-bold tabular-nums text-[#e9e9ed]">
               {formatTime(m.actual_arrival)}
             </span>
           </Row>
         )}
 
-        <Row label="Status">
+        <Row label="Status" ticket>
           <span
-            className={`text-xs font-bold uppercase tracking-wider ${statusColor[m.status] ?? 'text-gray-400'}`}
+            className={`text-xs font-bold uppercase tracking-wider ${statusColor[m.status] ?? 'text-sp-dim'}`}
           >
             {m.status}
           </span>
         </Row>
 
         {m.outcome && (
-          <Row label="Outcome">
+          <Row label="Outcome" ticket>
             <span
               className={`text-xs font-bold uppercase tracking-wider ${
                 m.outcome === 'on_time'
-                  ? 'text-emerald-500'
+                  ? 'text-[#3ad07e]'
                   : m.outcome === 'very_late'
-                  ? 'text-red-500'
-                  : 'text-amber-500'
+                  ? 'text-[#ff5247]'
+                  : 'text-[#ffb020]'
               }`}
             >
               {m.outcome === 'on_time' ? 'On Time' : m.outcome === 'very_late' ? 'Very Late' : 'Late'}
@@ -145,14 +148,14 @@ export default function MarketDetailPage() {
       {/* Stop stats */}
       {stopStats.data && (
         <div className="card mt-3 px-4 py-3 flex justify-between items-center">
-          <span className="text-xs text-gray-400 uppercase tracking-wide">
+          <span className="text-xs text-sp-dim uppercase tracking-wide">
             Historical on-time rate
           </span>
           <div className="text-right">
             <span className="text-sm font-bold tabular-nums">
               {Math.round(stopStats.data.on_time_rate * 100)}%
             </span>
-            <span className="text-xs text-gray-400 ml-1">
+            <span className="text-xs text-sp-dim ml-1">
               ({stopStats.data.sample_count} trains)
             </span>
           </div>
@@ -193,10 +196,10 @@ export default function MarketDetailPage() {
               <span
                 className={`text-sm font-bold uppercase ${
                   userWager.prediction === 'on_time'
-                    ? 'text-emerald-600'
+                    ? 'text-sp-on'
                     : userWager.prediction === 'very_late'
-                    ? 'text-red-600'
-                    : 'text-amber-600'
+                    ? 'text-sp-very'
+                    : 'text-sp-late'
                 }`}
               >
                 {userWager.prediction === 'on_time'
@@ -256,10 +259,10 @@ export default function MarketDetailPage() {
                   <span
                     className={`text-[10px] font-bold uppercase tracking-wider ${
                       w.prediction === 'on_time'
-                        ? 'text-emerald-500'
+                        ? 'text-sp-on'
                         : w.prediction === 'very_late'
-                        ? 'text-red-500'
-                        : 'text-amber-500'
+                        ? 'text-sp-very'
+                        : 'text-sp-late'
                     }`}
                   >
                     {w.prediction === 'on_time'
@@ -294,13 +297,21 @@ export default function MarketDetailPage() {
 function Row({
   label,
   children,
+  ticket = false,
 }: {
   label: string
   children: React.ReactNode
+  ticket?: boolean
 }) {
   return (
-    <div className="flex justify-between items-center px-4 py-2.5">
-      <span className="text-xs text-gray-400 uppercase tracking-wide">
+    <div className={ticket ? 'flex justify-between items-center px-4 py-3' : 'flex justify-between items-center px-4 py-2.5'}>
+      <span
+        className={
+          ticket
+            ? 'text-[10px] font-bold uppercase tracking-widest text-[#ffb800]/70'
+            : 'text-xs text-sp-dim uppercase tracking-wide'
+        }
+      >
         {label}
       </span>
       {children}

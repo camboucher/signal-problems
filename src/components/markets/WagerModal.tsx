@@ -25,9 +25,9 @@ const TIERS: { prediction: WagerPrediction; label: string; sub: string; oddsKey:
 ]
 
 const TIER_COLORS: Record<WagerPrediction, { active: string; border: string }> = {
-  on_time:   { active: 'border-emerald-500 bg-emerald-50 text-emerald-700', border: 'border-gray-200 text-gray-400 hover:border-gray-300' },
-  late:      { active: 'border-amber-500  bg-amber-50  text-amber-700',  border: 'border-gray-200 text-gray-400 hover:border-gray-300' },
-  very_late: { active: 'border-red-500    bg-red-50    text-red-700',    border: 'border-gray-200 text-gray-400 hover:border-gray-300' },
+  on_time:   { active: 'border-sp-on bg-sp-on/10 text-sp-on',     border: 'border-sp-edge text-sp-dim hover:border-sp-on/50' },
+  late:      { active: 'border-sp-late bg-sp-late/10 text-sp-late', border: 'border-sp-edge text-sp-dim hover:border-sp-late/50' },
+  very_late: { active: 'border-sp-very bg-sp-very/10 text-sp-very', border: 'border-sp-edge text-sp-dim hover:border-sp-very/50' },
 }
 
 export default function WagerModal({
@@ -125,7 +125,7 @@ export default function WagerModal({
               step={10}
               value={Math.min(amount, maxAllowed || MIN_WAGER)}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full accent-gray-950"
+              className="w-full accent-sp-accent"
             />
             <div className="flex items-center gap-2 mt-2">
               <input

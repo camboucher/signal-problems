@@ -37,7 +37,7 @@ export default function AboutPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
       {/* Masthead */}
-      <section className="border-b-2 border-gray-950 pb-5">
+      <section className="border-b-2 border-sp-led pb-5">
         <h1 className="text-2xl font-bold tracking-tight">Signal Problems</h1>
         <p className="text-sm text-gray-600 mt-2 leading-relaxed">
           A real-time prediction market for NYC subway delays. Bet virtual credits on whether

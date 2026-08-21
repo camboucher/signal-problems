@@ -96,7 +96,7 @@ export default function ProfilePage() {
   if (profileQuery.error || !profileQuery.data) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="text-sm text-red-500 text-center py-16 border border-dashed border-red-100">
+        <div className="text-sm text-sp-very text-center py-16 border border-dashed border-sp-very/30">
           User not found
         </div>
       </div>
@@ -173,14 +173,14 @@ export default function ProfilePage() {
           <Tabs.List className="flex gap-4 border-b border-gray-100 mb-4">
             <Tabs.Trigger
               value="history"
-              className="text-xs font-medium uppercase tracking-wide pb-2 text-gray-400 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-gray-900 transition-colors"
+              className="text-xs font-medium uppercase tracking-wide pb-2 text-sp-dim data-[state=active]:text-sp-text data-[state=active]:border-b-2 data-[state=active]:border-sp-accent transition-colors"
             >
               Wager History
             </Tabs.Trigger>
             {isOwnProfile && (
               <Tabs.Trigger
                 value="stats"
-                className="text-xs font-medium uppercase tracking-wide pb-2 text-gray-400 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-gray-900 transition-colors"
+                className="text-xs font-medium uppercase tracking-wide pb-2 text-sp-dim data-[state=active]:text-sp-text data-[state=active]:border-b-2 data-[state=active]:border-sp-accent transition-colors"
               >
                 Stats
               </Tabs.Trigger>
