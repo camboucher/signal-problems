@@ -21,9 +21,9 @@ describe('DistributionBar', () => {
     const { container } = render(
       <DistributionBar onTimeAmount={75} lateAmount={15} veryLateAmount={10} />,
     )
-    const onTimeBar = container.querySelector('[class*="bg-emerald-500"]')
-    const lateBar = container.querySelector('[class*="bg-amber-500"]')
-    const veryLateBar = container.querySelector('[class*="bg-red-500"]')
+    const onTimeBar = container.querySelector('[class*="bg-sp-on"]')
+    const lateBar = container.querySelector('[class*="bg-sp-late"]')
+    const veryLateBar = container.querySelector('[class*="bg-sp-very"]')
     expect(onTimeBar).toHaveStyle({ width: '75%' })
     expect(lateBar).toHaveStyle({ width: '15%' })
     expect(veryLateBar).toHaveStyle({ width: '10%' })

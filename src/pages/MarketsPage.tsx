@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { LiveDot, PageHeader } from '../components/signage/Signage'
 import { useAuth } from '../lib/auth-context'
 import { useMarkets } from '../hooks/use-markets'
 import { useMyWagers } from '../hooks/use-profile'
@@ -14,12 +16,12 @@ function buildEmptyMessage(
   selectedLine: string | null,
   search: string,
 ): string {
-  if (viewMode === 'wagered') return 'No wagered trains in the current list.'
-  if (viewMode === 'favorited') return 'No trains at your favorited stations.'
-  const parts = ['No upcoming trains']
-  if (selectedLine) parts.push(`for the ${selectedLine} train`)
-  if (search) parts.push(`matching "${search}"`)
-  return parts.join(' ')
+  if (viewMode === 'wagered') return "You haven't made a call on any of these trains yet."
+  if (viewMode === 'favorited') return 'Nothing coming to your saved stations right now. Tap the star on a train to save its station.'
+  const parts = ['No trains coming up']
+  if (selectedLine) parts.push(`on the ${selectedLine}`)
+  if (search) parts.push(`at "${search}"`)
+  return `${parts.join(' ')}. Try another line or check back in a minute.`
 }
 
 function MarketList({
@@ -35,7 +37,7 @@ function MarketList({
 }>) {
   if (!markets?.length) {
     return (
-      <div className="text-sm text-gray-400 text-center py-12 border border-dashed border-gray-200">
+      <div className="empty-state">
         {emptyMessage}
       </div>
     )
@@ -106,14 +108,32 @@ export default function MarketsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-xl font-bold tracking-tight">Trains</h1>
-        {profile && (
-          <span className="text-sm font-medium tabular-nums">
-            {profile.credits_balance.toLocaleString()} credits
-          </span>
-        )}
-      </div>
+      <PageHeader
+        kicker="Live board"
+        live
+        title="Next trains"
+        right={
+          profile && (
+            <div className="text-right">
+              <div className="text-lg font-bold tabular-nums text-sp-led leading-none">
+                {profile.credits_balance.toLocaleString()}
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-sp-dim mt-1">
+                Credits
+              </div>
+            </div>
+          )
+        }
+      />
+      {!user && (
+        <p className="text-sm text-sp-dim -mt-2 mb-5 leading-relaxed">
+          Tap any train to see the odds.{' '}
+          <Link to="/signup" className="text-sp-accent font-medium hover:underline underline-offset-2">
+            Sign up
+          </Link>{' '}
+          to start making calls with 1,000 free play credits.
+        </p>
+      )}
 
       <MarketFilters
         selectedLine={selectedLine}
@@ -131,13 +151,22 @@ export default function MarketsPage() {
 
       <div className="mt-6">
         {isLoading && (
-          <div className="text-sm text-gray-400 text-center py-16">
+          <div className="flex items-center justify-center gap-2.5 text-sm text-sp-dim py-16">
+            <LiveDot tone="led" />
             Loading trains…
           </div>
         )}
         {error && (
-          <div className="text-sm text-red-500 text-center py-16">
-            Failed to load trains
+          <div className="empty-state text-sp-very border-sp-very/30">
+            We couldn't reach the train feed. Give it a moment and try again.
+          </div>
+        )}
+        {!isLoading && !error && displayedMarkets.length > 0 && (
+          <div className="hidden xs:flex items-center justify-end gap-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-sp-dim">
+            <span>Pays if you're right:</span>
+            <span className="text-sp-on">On time</span>
+            <span className="text-sp-late">Late</span>
+            <span className="text-sp-very">Very late</span>
           </div>
         )}
         {!isLoading && !error && (

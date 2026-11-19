@@ -92,6 +92,18 @@
   .animate-sp-glow {
     animation: sp-glow 3.4s ease-in-out infinite;
   }
+  .animate-sp-flip {
+    animation: sp-flip 0.45s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sp-marquee,
+  .animate-sp-blink,
+  .animate-sp-glow,
+  .animate-sp-flip {
+    animation: none !important;
+  }
 }
 
 @layer base {
@@ -102,7 +114,7 @@
   body {
     background: var(--sp-bg);
     color: var(--sp-text);
-    font-family: '"Helvetica Neue"', Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-variant-numeric: tabular-nums;
   }
@@ -144,5 +156,24 @@
 
   .card {
     @apply bg-sp-panel border border-sp-edge;
+  }
+
+  /* Segmented toggle (view modes, sort, leaderboard period). The active
+     segment gets the amber underline used on the signage bars. */
+  .seg {
+    @apply flex border border-sp-edge bg-sp-panel;
+  }
+  .seg-btn {
+    @apply flex-1 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-sp-dim border-b-2 border-transparent transition-colors hover:text-sp-text;
+  }
+  .seg-btn + .seg-btn {
+    @apply border-l border-l-sp-edge;
+  }
+  .seg-btn-active {
+    @apply text-sp-text bg-sp-panel2 border-b-sp-led;
+  }
+
+  .empty-state {
+    @apply text-sm text-sp-dim text-center py-12 px-6 border border-dashed border-sp-edge;
   }
 }

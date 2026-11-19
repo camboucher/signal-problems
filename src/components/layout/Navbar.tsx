@@ -1,13 +1,14 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { SignLogo } from '../signage/Signage'
 import { useAuth } from '../../lib/auth-context'
 import { isRuntimeDemoMode, exitDemoMode } from '../../lib/mock-mode'
 import ThemeToggle from './ThemeToggle'
 
-// This header is a fixed "signage" bar — like a real subway sign, it stays
-// dark regardless of the app's light/dark theme — so colors here are
+// This header is a fixed "signage" bar. Like a real subway sign, it stays
+// dark regardless of the app's light/dark theme, so colors here are
 // hardcoded rather than pulled from the theme-reactive sp-* tokens.
 function navLinkClass({ isActive }: { isActive: boolean }) {
-  return `text-sm font-medium transition-colors ${isActive ? 'text-[#e9e9ed]' : 'text-[#8b8d9e] hover:text-[#9184d9]'}`
+  return `text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'text-[#e9e9ed]' : 'text-[#8b8d9e] hover:text-[#9184d9]'}`
 }
 
 export default function Navbar() {
@@ -26,14 +27,7 @@ export default function Navbar() {
   return (
     <header className="bg-[#0c0d12] border-b-[3px] border-[#ffb800] sticky top-0 z-10">
       <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
-        <Link to="/" className="flex items-center gap-2.5 shrink-0">
-          <span className="w-6 h-6 rounded-full bg-[#ffb800] text-[#0c0d12] inline-flex items-center justify-center text-xs font-bold">
-            S
-          </span>
-          <span className="font-bold tracking-widest text-xs uppercase text-[#e9e9ed]">
-            Signal Problems
-          </span>
-        </Link>
+        <SignLogo />
 
         <div className="flex-1" />
 
@@ -62,7 +56,7 @@ export default function Navbar() {
               </NavLink>
               <button
                 onClick={handleSignOut}
-                className="text-sm text-[#8b8d9e] hover:text-[#ff5247] transition-colors"
+                className="text-sm whitespace-nowrap text-[#8b8d9e] hover:text-[#ff5247] transition-colors"
               >
                 {isRuntimeDemoMode() ? 'Exit demo' : 'Sign out'}
               </button>

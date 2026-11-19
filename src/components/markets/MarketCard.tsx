@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import LineBadge from '../mta/LineBadge'
+import { LiveDot } from '../signage/Signage'
 import { formatTime, getDelayMinutes } from '../../lib/mta'
 import type { Database } from '../../types/database'
 
@@ -29,6 +30,7 @@ interface Props {
 
 export default function MarketCard({ market, isFavorite = false, onToggleFavorite }: Props) {
   const [toggleError, setToggleError] = useState(false)
+  const navigate = useNavigate()
 
   const delay = market.latest_predicted_arrival
     ? getDelayMinutes(market.scheduled_arrival, market.latest_predicted_arrival)
@@ -37,7 +39,10 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!onToggleFavorite) return
+    if (!onToggleFavorite) {
+      navigate('/login')
+      return
+    }
     const err = await onToggleFavorite(market.stop_id)
     if (err) {
       setToggleError(true)
@@ -48,7 +53,7 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
   return (
     <Link
       to={`/market/${market.id}`}
-      className="card block px-4 py-3 hover:bg-sp-panel2 transition-colors"
+      className="card group block px-4 py-3 hover:bg-sp-panel2 hover:border-sp-led/40 transition-colors"
     >
       <div className="flex items-center gap-3">
         <LineBadge line={market.route_id} />
@@ -61,9 +66,9 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
         </div>
 
         <div className="hidden xs:flex shrink-0 gap-1">
-          <OddsPill value={market.on_time_odds} color="text-sp-on" border="border-sp-on/35" />
-          <OddsPill value={market.late_odds} color="text-sp-late" border="border-sp-late/35" />
-          <OddsPill value={market.very_late_odds} color="text-sp-very" border="border-sp-very/35" />
+          <OddsPill label="On time" value={market.on_time_odds} color="text-sp-on" border="border-sp-on/35" />
+          <OddsPill label="Late" value={market.late_odds} color="text-sp-late" border="border-sp-late/35" />
+          <OddsPill label="Very late" value={market.very_late_odds} color="text-sp-very" border="border-sp-very/35" />
         </div>
 
         <div className="text-right shrink-0">
@@ -79,35 +84,43 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
             <div className="text-xs text-sp-on font-medium">on time</div>
           )}
           {delay === null && (
-            <div className="text-xs text-sp-dim">&mdash;</div>
+            <div className="text-xs text-sp-dim">no update</div>
           )}
         </div>
 
-        {onToggleFavorite && (
-          <button
-            type="button"
-            onClick={handleToggleFavorite}
-            className={`shrink-0 transition-colors ${
-              toggleError
-                ? 'text-sp-very'
-                : isFavorite
-                  ? 'text-sp-led'
-                  : 'text-sp-dim hover:text-sp-led'
-            }`}
-            aria-label={isFavorite ? 'Unfavorite station' : 'Favorite station'}
-          >
-            <StarIcon filled={isFavorite} />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleToggleFavorite}
+          className={`shrink-0 transition-colors ${
+            toggleError
+              ? 'text-sp-very'
+              : isFavorite
+                ? 'text-sp-led'
+                : onToggleFavorite
+                  ? 'text-sp-dim hover:text-sp-led'
+                  : 'text-sp-dim/40 hover:text-sp-dim'
+          }`}
+          aria-label={
+            onToggleFavorite
+              ? isFavorite ? 'Unfavorite station' : 'Favorite station'
+              : 'Sign in to favorite this station'
+          }
+          title={onToggleFavorite ? undefined : 'Sign in to favorite this station'}
+        >
+          <StarIcon filled={isFavorite} />
+        </button>
       </div>
 
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-sp-edge">
-        <span
-          className={`text-[10px] font-bold uppercase tracking-wider ${
-            market.status === 'open' ? 'text-sp-on' : 'text-sp-dim'
-          }`}
-        >
-          {market.status}
+        <span className="flex items-center gap-1.5">
+          {market.status === 'open' && <LiveDot className="w-1.5 h-1.5" />}
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider ${
+              market.status === 'open' ? 'text-sp-on' : 'text-sp-dim'
+            }`}
+          >
+            {market.status}
+          </span>
         </span>
         {market.latest_predicted_arrival && (
           <span className="text-[10px] text-sp-dim tabular-nums">
@@ -120,17 +133,22 @@ export default function MarketCard({ market, isFavorite = false, onToggleFavorit
 }
 
 function OddsPill({
+  label,
   value,
   color,
   border,
 }: {
+  label: string
   value: number | null | undefined
   color: string
   border: string
 }) {
   return (
-    <span className={`min-w-[46px] text-center py-1 border text-[11px] font-bold tabular-nums ${color} ${border}`}>
-      {typeof value === 'number' ? `${value.toFixed(2)}×` : '—'}
+    <span
+      title={`${label} pays ${typeof value === 'number' ? value.toFixed(2) : '?'}×`}
+      className={`min-w-[46px] text-center py-1 border text-[11px] font-bold tabular-nums ${color} ${border}`}
+    >
+      {typeof value === 'number' ? `${value.toFixed(2)}×` : '–'}
     </span>
   )
 }

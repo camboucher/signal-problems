@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
+import AuthShell from '../components/layout/AuthShell'
 
 export default function UsernameSetupPage() {
   const { updateUsername } = useAuth()
@@ -27,14 +28,7 @@ export default function UsernameSetupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Pick a username</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            This is how you'll appear on the leaderboard
-          </p>
-        </div>
+    <AuthShell kicker="Last stop" title="Pick a username" subtitle="This is what everyone sees on the leaderboard.">
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -53,8 +47,8 @@ export default function UsernameSetupPage() {
               autoComplete="off"
               autoFocus
             />
-            <p className="text-xs text-gray-400 mt-1">
-              3–20 characters, letters, numbers, and underscores only
+            <p className="text-xs text-sp-dim mt-1">
+              3 to 20 characters. Letters, numbers, and underscores.
             </p>
           </div>
 
@@ -69,10 +63,9 @@ export default function UsernameSetupPage() {
             className="btn-primary w-full"
             disabled={loading || !isValid}
           >
-            {loading ? 'Saving…' : 'Set username'}
+            {loading ? 'Saving…' : "Let's go"}
           </button>
         </form>
-      </div>
-    </div>
+    </AuthShell>
   )
 }

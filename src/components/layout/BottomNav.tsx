@@ -67,6 +67,22 @@ function IconSettings({ active }: { readonly active: boolean }) {
   )
 }
 
+function IconSignIn({ active }: { readonly active: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      strokeWidth={active ? 2.5 : 1.75}
+      stroke="currentColor"
+      className="w-5 h-5"
+    >
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+      <path d="M10 17l5-5-5-5" />
+      <line x1="15" y1="12" x2="3" y2="12" />
+    </svg>
+  )
+}
+
 export default function BottomNav() {
   const { user, profile } = useAuth()
   const profilePath = user ? `/profile/${profile?.username ?? user.id}` : '/login'
@@ -98,23 +114,36 @@ export default function BottomNav() {
         )}
       </NavLink>
 
-      <NavLink to={profilePath} className={({ isActive }) => linkClass(isActive)}>
-        {({ isActive }) => (
-          <>
-            <IconProfile active={isActive} />
-            <span className={labelClass}>{profile?.username ? 'Me' : 'Profile'}</span>
-          </>
-        )}
-      </NavLink>
+      {user ? (
+        <>
+          <NavLink to={profilePath} className={({ isActive }) => linkClass(isActive)}>
+            {({ isActive }) => (
+              <>
+                <IconProfile active={isActive} />
+                <span className={labelClass}>{profile?.username ? 'Me' : 'Profile'}</span>
+              </>
+            )}
+          </NavLink>
 
-      <NavLink to="/settings" className={({ isActive }) => linkClass(isActive)}>
-        {({ isActive }) => (
-          <>
-            <IconSettings active={isActive} />
-            <span className={labelClass}>Settings</span>
-          </>
-        )}
-      </NavLink>
+          <NavLink to="/settings" className={({ isActive }) => linkClass(isActive)}>
+            {({ isActive }) => (
+              <>
+                <IconSettings active={isActive} />
+                <span className={labelClass}>Settings</span>
+              </>
+            )}
+          </NavLink>
+        </>
+      ) : (
+        <NavLink to="/login" className={({ isActive }) => linkClass(isActive)}>
+          {({ isActive }) => (
+            <>
+              <IconSignIn active={isActive} />
+              <span className={labelClass}>Sign in</span>
+            </>
+          )}
+        </NavLink>
+      )}
     </nav>
   )
 }

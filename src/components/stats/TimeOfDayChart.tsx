@@ -19,16 +19,16 @@ export default function TimeOfDayChart({ data }: Props) {
         return (
           <div key={bucket}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500 w-20">{LABEL[bucket]}</span>
-              <span className="text-xs tabular-nums text-gray-400">
+              <span className="text-xs text-sp-dim w-20">{LABEL[bucket]}</span>
+              <span className="text-xs tabular-nums text-sp-dim">
                 {pct === null ? '—' : `${pct}% (${wins}/${total})`}
               </span>
             </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-sp-panel2 rounded-full overflow-hidden">
               {pct !== null && (
                 <div
                   className={`h-full rounded-full transition-all ${
-                    pct >= 60 ? 'bg-emerald-400' : pct >= 40 ? 'bg-yellow-400' : 'bg-red-400'
+                    pct >= 60 ? 'bg-sp-on' : pct >= 40 ? 'bg-sp-late' : 'bg-sp-very'
                   }`}
                   style={{ width: `${pct}%` }}
                 />

@@ -9,7 +9,7 @@ export default function DistributionBar({ onTimeAmount, lateAmount, veryLateAmou
 
   if (total === 0) {
     return (
-      <div className="h-6 bg-gray-100 flex items-center justify-center text-[10px] text-gray-400 uppercase tracking-wide">
+      <div className="h-6 bg-sp-panel2 border border-dashed border-sp-edge flex items-center justify-center text-[10px] text-sp-dim uppercase tracking-widest">
         No wagers yet
       </div>
     )
@@ -21,34 +21,34 @@ export default function DistributionBar({ onTimeAmount, lateAmount, veryLateAmou
 
   return (
     <div>
-      <div className="h-6 flex overflow-hidden">
+      <div className="h-6 flex overflow-hidden gap-px">
         {onTimePct > 0 && (
           <div
-            className="bg-emerald-500 transition-all"
+            className="bg-sp-on transition-all"
             style={{ width: `${onTimePct}%` }}
           />
         )}
         {latePct > 0 && (
           <div
-            className="bg-amber-500 transition-all"
+            className="bg-sp-late transition-all"
             style={{ width: `${latePct}%` }}
           />
         )}
         {veryLatePct > 0 && (
           <div
-            className="bg-red-500 transition-all"
+            className="bg-sp-very transition-all"
             style={{ width: `${veryLatePct}%` }}
           />
         )}
       </div>
-      <div className="flex justify-between mt-1.5 text-xs">
-        <span className="text-emerald-600 font-medium">ON TIME {onTimePct}%</span>
+      <div className="flex justify-between mt-1.5 text-[11px] font-bold tracking-wide">
+        <span className="text-sp-on">ON TIME {onTimePct}%</span>
         {latePct > 0 && (
-          <span className="text-amber-600 font-medium">LATE {latePct}%</span>
+          <span className="text-sp-late">LATE {latePct}%</span>
         )}
-        <span className="text-red-600 font-medium">VERY LATE {veryLatePct}%</span>
+        <span className="text-sp-very">VERY LATE {veryLatePct}%</span>
       </div>
-      <div className="flex justify-between text-[11px] text-gray-400 tabular-nums">
+      <div className="flex justify-between text-[11px] text-sp-dim tabular-nums">
         <span>{onTimeAmount.toLocaleString()} credits</span>
         <span>{(lateAmount + veryLateAmount).toLocaleString()} credits</span>
       </div>

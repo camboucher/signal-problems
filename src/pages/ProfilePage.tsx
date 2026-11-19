@@ -7,6 +7,7 @@ import WagerHistory from '../components/wagers/WagerHistory'
 import StatCard from '../components/stats/StatCard'
 import LineBreakdownTable from '../components/stats/LineBreakdownTable'
 import TimeOfDayChart from '../components/stats/TimeOfDayChart'
+import { SectionLabel } from '../components/signage/Signage'
 
 const MIN_SETTLED_FOR_STATS = 5
 
@@ -18,14 +19,14 @@ function ProfileStats({ wagers, isLoading }: {
   const settled = (wagers ?? []).filter((w) => w.markets.status === 'settled' && w.payout !== null)
 
   if (isLoading) {
-    return <div className="text-sm text-gray-400 text-center py-12">Loading stats…</div>
+    return <div className="text-sm text-sp-dim text-center py-12">Loading stats…</div>
   }
 
   if (settled.length < MIN_SETTLED_FOR_STATS) {
     return (
-      <div className="text-sm text-gray-400 text-center py-12 border border-dashed border-gray-200">
-        Place more wagers to see your stats
-        <p className="text-xs mt-1">({MIN_SETTLED_FOR_STATS - settled.length} more settled wager{MIN_SETTLED_FOR_STATS - settled.length !== 1 ? 's' : ''} needed)</p>
+      <div className="text-sm text-sp-dim text-center py-12 border border-dashed border-sp-edge">
+        Your stats show up after a few finished calls.
+        <p className="text-xs mt-1">{MIN_SETTLED_FOR_STATS - settled.length} more to go.</p>
       </div>
     )
   }
@@ -38,29 +39,29 @@ function ProfileStats({ wagers, isLoading }: {
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-3">
         <StatCard
-          label="Avg Wager"
+          label="Avg stake"
           value={Math.round(stats.avgWagerSize).toLocaleString()}
         />
         <StatCard
-          label="Current Streak"
+          label="Streak"
           value={roiLabel}
-          valueClass={stats.streak.type === 'win' ? 'text-emerald-600' : stats.streak.type === 'loss' ? 'text-red-500' : ''}
+          valueClass={stats.streak.type === 'win' ? 'text-sp-on' : stats.streak.type === 'loss' ? 'text-sp-very' : ''}
         />
         <StatCard
-          label="Longest Streak"
+          label="Best streak"
           value={stats.streak.longest > 0 ? `${stats.streak.longest}` : '—'}
         />
       </div>
 
       <div>
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">ROI by Line</p>
+        <SectionLabel>How you do on each line</SectionLabel>
         <div className="card px-4 py-3">
           <LineBreakdownTable lines={stats.roiByLine} />
         </div>
       </div>
 
       <div>
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-3">Win Rate by Time of Day</p>
+        <SectionLabel>When you call it best</SectionLabel>
         <div className="card px-4 py-4">
           <TimeOfDayChart data={stats.winRateByTimeOfDay} />
         </div>
@@ -78,13 +79,12 @@ export default function ProfilePage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-5 bg-gray-100 w-32" />
-          <div className="card grid grid-cols-3 divide-x divide-gray-100">
+          <div className="h-5 bg-sp-panel2 w-32" />
+          <div className="card grid grid-cols-3 divide-x divide-sp-edge">
             {Array.from({ length: 3 }).map((_, i) => (
-              // eslint-disable-next-line react/no-array-index-key
               <div key={i} className="px-4 py-3 text-center space-y-1.5">
-                <div className="h-4 bg-gray-100 mx-auto w-12" />
-                <div className="h-2 bg-gray-100 mx-auto w-10" />
+                <div className="h-4 bg-sp-panel2 mx-auto w-12" />
+                <div className="h-2 bg-sp-panel2 mx-auto w-10" />
               </div>
             ))}
           </div>
@@ -96,8 +96,8 @@ export default function ProfilePage() {
   if (profileQuery.error || !profileQuery.data) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="text-sm text-sp-very text-center py-16 border border-dashed border-sp-very/30">
-          User not found
+        <div className="empty-state">
+          We couldn't find anyone by that name.
         </div>
       </div>
     )
@@ -116,66 +116,66 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">{profile.username}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Since{' '}
+          <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-sp-dim">
+            Riding since{' '}
             {new Date(profile.created_at).toLocaleDateString('en-US', {
               month: 'short',
               year: 'numeric',
             })}
           </p>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight leading-tight">{profile.username}</h1>
         </div>
         {isOwnProfile && (
-          <Link to="/settings" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">
+          <Link to="/settings" className="text-xs text-sp-dim hover:text-sp-text transition-colors">
             Settings →
           </Link>
         )}
       </div>
 
       {/* Stats grid */}
-      <div className="card grid grid-cols-3 divide-x divide-gray-100">
+      <div className="card grid grid-cols-3 divide-x divide-sp-edge">
         <div className="px-4 py-3 text-center">
-          <div className="text-sm font-bold tabular-nums">
+          <div className="text-lg font-bold tabular-nums text-sp-led">
             {profile.credits_balance.toLocaleString()}
           </div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Balance</div>
+          <div className="text-[10px] font-bold text-sp-dim uppercase tracking-widest mt-1">Balance</div>
         </div>
         <div className="px-4 py-3 text-center">
           <div
-            className={`text-sm font-bold tabular-nums ${
-              netProfit >= 0 ? 'text-emerald-600' : 'text-red-500'
+            className={`text-lg font-bold tabular-nums ${
+              netProfit >= 0 ? 'text-sp-on' : 'text-sp-very'
             }`}
           >
             {netProfit >= 0 ? '+' : ''}
             {netProfit.toLocaleString()}
           </div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Net Profit</div>
+          <div className="text-[10px] font-bold text-sp-dim uppercase tracking-widest mt-1">Net</div>
         </div>
         <div className="px-4 py-3 text-center">
-          <div className="text-sm font-bold tabular-nums">
+          <div className="text-lg font-bold tabular-nums">
             {settledWagers.length === 0
               ? '—'
               : `${Math.round((wins / settledWagers.length) * 100)}%`}
           </div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Win Rate</div>
+          <div className="text-[10px] font-bold text-sp-dim uppercase tracking-widest mt-1">Win Rate</div>
         </div>
       </div>
 
       {settledWagers.length > 0 && (
-        <p className="text-[10px] text-gray-400 text-right mt-1 tabular-nums">
-          {wins}W / {losses}L across {settledWagers.length} settled wager{settledWagers.length !== 1 ? 's' : ''}
+        <p className="text-[10px] text-sp-dim text-right mt-1 tabular-nums">
+          {wins}W / {losses}L across {settledWagers.length} finished call{settledWagers.length !== 1 ? 's' : ''}
         </p>
       )}
 
       {/* Tabs */}
       <div className="mt-6">
         <Tabs.Root defaultValue="history">
-          <Tabs.List className="flex gap-4 border-b border-gray-100 mb-4">
+          <Tabs.List className="flex gap-4 border-b border-sp-edge mb-4">
             <Tabs.Trigger
               value="history"
               className="text-xs font-medium uppercase tracking-wide pb-2 text-sp-dim data-[state=active]:text-sp-text data-[state=active]:border-b-2 data-[state=active]:border-sp-accent transition-colors"
             >
-              Wager History
+              Calls
             </Tabs.Trigger>
             {isOwnProfile && (
               <Tabs.Trigger
@@ -191,7 +191,7 @@ export default function ProfilePage() {
             <WagerHistory
               wagers={wagers}
               isLoading={wagersQuery.isLoading}
-              emptyMessage={`${profile.username} hasn't placed any wagers yet`}
+              emptyMessage={`${profile.username} hasn't made any calls yet.`}
             />
           </Tabs.Content>
 

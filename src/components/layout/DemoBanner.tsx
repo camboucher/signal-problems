@@ -5,7 +5,7 @@ export default function DemoBanner() {
 
   return (
     <div className="bg-sp-led/10 border-b border-sp-led/30 text-sp-led text-xs sm:text-sm px-4 py-2 text-center">
-      You're viewing a live demo with sample data — wagers and edits aren't saved.
+      You're in demo mode with sample trains. Nothing you do here gets saved.
       {isRuntimeDemoMode() && (
         <>
           {' '}

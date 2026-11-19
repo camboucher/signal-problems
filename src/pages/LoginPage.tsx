@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
-import { enterDemoMode } from '../lib/mock-mode'
+import { markLandingSeen } from '../lib/ftue'
+import AuthShell from '../components/layout/AuthShell'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
@@ -28,12 +29,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
-          <p className="text-sm text-gray-500 mt-1">Welcome back to Signal Problems</p>
-        </div>
+    <AuthShell kicker="Welcome back" title="Sign in" subtitle="Your trains are waiting. Probably late.">
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -75,26 +71,24 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-sm text-gray-500 mt-6 text-center">
-          No account?{' '}
-          <Link to="/signup" className="text-gray-950 font-medium underline underline-offset-2">
-            Sign up
+        <p className="text-sm text-sp-dim mt-6 text-center">
+          New here?{' '}
+          <Link to="/signup" className="text-sp-accent font-medium underline underline-offset-2">
+            Make an account
           </Link>
         </p>
 
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-          <button
-            type="button"
-            onClick={enterDemoMode}
-            className="text-sm text-gray-500 hover:text-gray-950 underline underline-offset-2"
+        <p className="text-sm text-sp-dim mt-6 pt-6 border-t border-sp-edge text-center">
+          Just looking?{' '}
+          <Link
+            to="/"
+            onClick={markLandingSeen}
+            className="text-sp-accent font-medium underline underline-offset-2"
           >
-            Just looking? Try the live demo →
-          </button>
-          <p className="text-xs text-gray-400 mt-1">
-            Sample data, no signup — nothing you do here is saved.
-          </p>
-        </div>
-      </div>
-    </div>
+            Browse the trains
+          </Link>{' '}
+          without an account.
+        </p>
+    </AuthShell>
   )
 }

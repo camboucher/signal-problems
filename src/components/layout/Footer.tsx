@@ -4,8 +4,9 @@ export default function Footer() {
   return (
     <footer className="hidden sm:block border-t border-sp-edge mt-8">
       <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between text-[10px] text-sp-dim">
-        <span>Signal Problems &middot; Not real money</span>
+        <span>Signal Problems &middot; Play credits only &middot; Not affiliated with the MTA</span>
         <nav className="flex gap-4">
+          <Link to="/welcome" className="hover:text-sp-accent transition-colors">Welcome</Link>
           <Link to="/about" className="hover:text-sp-accent transition-colors">About</Link>
           <Link to="/leaderboard" className="hover:text-sp-accent transition-colors">Leaderboard</Link>
         </nav>

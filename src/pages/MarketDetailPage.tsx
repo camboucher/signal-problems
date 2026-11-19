@@ -4,8 +4,23 @@ import { useAuth } from '../lib/auth-context'
 import { useMarketDetail } from '../hooks/use-market-detail'
 import LineBadge from '../components/mta/LineBadge'
 import DistributionBar from '../components/markets/DistributionBar'
+import OddsExplainer from '../components/markets/OddsExplainer'
 import WagerModal from '../components/markets/WagerModal'
 import { formatTime, getDelayMinutes } from '../lib/mta'
+import { LiveDot, SectionLabel } from '../components/signage/Signage'
+import type { WagerPrediction } from '../types/database'
+
+const PICK_LABEL: Record<WagerPrediction, string> = {
+  on_time: 'On time',
+  late: 'Late',
+  very_late: 'Very late',
+}
+
+const PICK_COLOR: Record<WagerPrediction, string> = {
+  on_time: 'text-sp-on',
+  late: 'text-sp-late',
+  very_late: 'text-sp-very',
+}
 
 export default function MarketDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -16,7 +31,10 @@ export default function MarketDetailPage() {
   if (market.isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="text-sm text-gray-400 text-center py-16">Loading…</div>
+        <div className="flex items-center justify-center gap-2.5 text-sm text-sp-dim py-16">
+          <LiveDot tone="led" />
+          Loading…
+        </div>
       </div>
     )
   }
@@ -24,11 +42,11 @@ export default function MarketDetailPage() {
   if (market.error || !market.data) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <Link to="/" className="text-sm text-gray-400 hover:text-gray-600">
-          ← Back to markets
+        <Link to="/" className="text-sm text-sp-dim hover:text-sp-accent">
+          ← All trains
         </Link>
-        <div className="text-sm text-red-500 text-center py-16 mt-4">
-          Market not found
+        <div className="empty-state mt-4">
+          We couldn't find that train. It may have already left the station.
         </div>
       </div>
     )
@@ -59,7 +77,7 @@ export default function MarketDetailPage() {
     refreshProfile()
   }
 
-  // The ticket box below is a fixed dark "signage" surface (like Navbar) —
+  // The ticket box below is a fixed dark "signage" surface (like Navbar), so
   // these colors are hardcoded rather than pulled from the theme-reactive
   // sp-* tokens, which would go dark-on-dark in light theme.
   const statusColor: Record<string, string> = {
@@ -72,22 +90,30 @@ export default function MarketDetailPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <Link to="/" className="text-sm text-sp-dim hover:text-sp-accent">
-        ← Back to markets
+        ← All trains
       </Link>
 
       {/* Header */}
-      <div className="flex items-start gap-3 mt-4">
+      <div className="flex items-center gap-3.5 mt-4">
         <LineBadge line={m.route_id} size="lg" />
-        <div>
-          <h1 className="text-lg font-bold tracking-tight">{m.stop_name}</h1>
-          <p className="text-xs text-sp-dim mt-0.5 uppercase tracking-wide">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-sp-dim">
             {m.route_id} train&ensp;·&ensp;Trip {m.trip_id.slice(-6)}
           </p>
+          <h1 className="text-2xl sm:text-3xl font-medium tracking-tight leading-tight truncate">
+            {m.stop_name}
+          </h1>
         </div>
       </div>
 
-      {/* Ticket: scheduled / predicted / status — fixed dark signage surface */}
-      <div className="mt-5 border border-[#ffb800]/30 bg-[#0c0d12] divide-y divide-[#ffb800]/20">
+      {/* Ticket: scheduled / predicted / status, on a fixed dark signage surface */}
+      <div className="mt-5 border border-[#ffb800]/30 bg-[#0c0d12] divide-y divide-[#ffb800]/20 shadow-xl">
+        <div className="flex items-center gap-2.5 px-4 py-2.5">
+          {m.status === 'open' ? <LiveDot tone="led" /> : <span className="w-2 h-2 rounded-full bg-[#8b8d9e]/50" />}
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#ffb800]">
+            Arrival board
+          </span>
+        </div>
         <Row label="Scheduled" ticket>
           <span className="text-sm font-bold tabular-nums text-[#e9e9ed]">
             {formatTime(m.scheduled_arrival)}
@@ -96,7 +122,10 @@ export default function MarketDetailPage() {
 
         {m.latest_predicted_arrival && (
           <Row label="Predicted" ticket>
-            <span className="text-sm tabular-nums text-[#ffb800]">
+            <span
+              key={m.latest_predicted_arrival}
+              className="inline-block animate-sp-flip text-sm tabular-nums text-[#ffb800]"
+            >
               {formatTime(m.latest_predicted_arrival)}
               {delay !== null && delay > 0 && (
                 <span className="text-[#ff5247] font-medium ml-2">
@@ -139,7 +168,7 @@ export default function MarketDetailPage() {
                   : 'text-[#ffb020]'
               }`}
             >
-              {m.outcome === 'on_time' ? 'On Time' : m.outcome === 'very_late' ? 'Very Late' : 'Late'}
+              {PICK_LABEL[m.outcome]}
             </span>
           </Row>
         )}
@@ -148,8 +177,8 @@ export default function MarketDetailPage() {
       {/* Stop stats */}
       {stopStats.data && (
         <div className="card mt-3 px-4 py-3 flex justify-between items-center">
-          <span className="text-xs text-sp-dim uppercase tracking-wide">
-            Historical on-time rate
+          <span className="text-xs text-sp-dim">
+            How often this train is on time here
           </span>
           <div className="text-right">
             <span className="text-sm font-bold tabular-nums">
@@ -162,11 +191,12 @@ export default function MarketDetailPage() {
         </div>
       )}
 
+      {/* Odds explainer */}
+      <OddsExplainer market={m} stopStats={stopStats.data} />
+
       {/* Distribution bar */}
       <div className="mt-5">
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
-          Wager Distribution
-        </p>
+        <SectionLabel>What everyone's calling</SectionLabel>
         <DistributionBar onTimeAmount={onTimeAmount} lateAmount={lateAmount} veryLateAmount={veryLateAmount} />
       </div>
 
@@ -175,60 +205,48 @@ export default function MarketDetailPage() {
         {m.status === 'open' && user && !userWager && (
           <button
             onClick={() => setWagerOpen(true)}
-            className="btn-primary w-full"
+            className="btn-primary w-full py-3 animate-sp-glow"
           >
-            Place Wager
+            Make your call
           </button>
         )}
 
         {m.status === 'open' && !user && (
-          <Link to="/login" className="btn-primary w-full text-center block">
-            Sign in to wager
+          <Link to="/login" className="btn-primary w-full py-3 text-center">
+            Sign in to make a call
           </Link>
         )}
 
         {userWager && (
           <div className="card px-4 py-3">
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-              Your wager
-            </p>
+            <SectionLabel className="mb-1.5">Your call</SectionLabel>
             <div className="flex justify-between items-center">
-              <span
-                className={`text-sm font-bold uppercase ${
-                  userWager.prediction === 'on_time'
-                    ? 'text-sp-on'
-                    : userWager.prediction === 'very_late'
-                    ? 'text-sp-very'
-                    : 'text-sp-late'
-                }`}
-              >
-                {userWager.prediction === 'on_time'
-                  ? 'On Time'
-                  : userWager.prediction === 'very_late'
-                  ? 'Very Late'
-                  : 'Late'}
+              <span className={`text-sm font-bold uppercase tracking-wide ${PICK_COLOR[userWager.prediction]}`}>
+                {PICK_LABEL[userWager.prediction]}
               </span>
               <span className="text-sm font-bold tabular-nums">
                 {userWager.amount.toLocaleString()} credits
               </span>
             </div>
             {userWager.payout !== null && (
-              <p className="text-xs text-gray-400 mt-1">
-                Payout: {userWager.payout.toLocaleString()} credits
+              <p className="text-xs text-sp-dim mt-1">
+                {userWager.payout > 0
+                  ? `You got back ${userWager.payout.toLocaleString()} credits.`
+                  : 'Not this time. Better luck on the next one.'}
               </p>
             )}
           </div>
         )}
 
         {m.status === 'closed' && !userWager && (
-          <p className="text-sm text-gray-400 text-center py-4">
-            Betting is closed for this market
+          <p className="empty-state py-5">
+            The doors have closed on this one. Pick another train to play.
           </p>
         )}
 
         {m.status === 'cancelled' && (
-          <p className="text-sm text-gray-400 text-center py-4">
-            This market was cancelled — all wagers refunded
+          <p className="empty-state py-5">
+            This train was cancelled, so everyone got their credits back.
           </p>
         )}
       </div>
@@ -236,10 +254,8 @@ export default function MarketDetailPage() {
       {/* Recent wagers list */}
       {wagers.data && wagers.data.length > 0 && (
         <div className="mt-6">
-          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
-            Recent Wagers
-          </p>
-          <div className="card divide-y divide-gray-100">
+          <SectionLabel>Recent calls</SectionLabel>
+          <div className="card divide-y divide-sp-edge">
             {wagers.data.map((w) => (
               <div
                 key={w.id}
@@ -254,26 +270,14 @@ export default function MarketDetailPage() {
                       {w.profiles.username}
                     </Link>
                   ) : (
-                    <span className="text-sm text-gray-400">Anon</span>
+                    <span className="text-sm text-sp-dim">Someone</span>
                   )}
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider ${
-                      w.prediction === 'on_time'
-                        ? 'text-sp-on'
-                        : w.prediction === 'very_late'
-                        ? 'text-sp-very'
-                        : 'text-sp-late'
-                    }`}
-                  >
-                    {w.prediction === 'on_time'
-                      ? 'On Time'
-                      : w.prediction === 'very_late'
-                      ? 'Very Late'
-                      : 'Late'}
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${PICK_COLOR[w.prediction]}`}>
+                    {PICK_LABEL[w.prediction]}
                   </span>
                 </div>
-                <span className="text-xs text-gray-400 tabular-nums">
-                  {w.amount.toLocaleString()}
+                <span className="text-xs text-sp-dim tabular-nums">
+                  {w.amount.toLocaleString()} cr
                 </span>
               </div>
             ))}

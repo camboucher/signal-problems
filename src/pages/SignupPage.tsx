@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
+import AuthShell from '../components/layout/AuthShell'
 
 export default function SignupPage() {
   const { signUp } = useAuth()
@@ -40,29 +41,26 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center">
-          <div className="text-4xl mb-4">🚇</div>
-          <h1 className="text-xl font-bold mb-2">Check your email</h1>
-          <p className="text-sm text-gray-500">
-            We sent a confirmation link to <span className="font-medium text-gray-950">{email}</span>.
-            Click it to activate your account and claim your 1,000 credits.
-          </p>
-          <p className="text-xs text-gray-400 mt-4">Redirecting to login…</p>
-        </div>
-      </div>
+      <AuthShell kicker="Almost there" title="Check your email">
+        <p className="text-sm text-sp-dim leading-relaxed">
+          We sent a link to <span className="font-medium text-sp-text">{email}</span>. Click it to
+          finish signing up and grab your 1,000 credits.
+        </p>
+        <p className="text-xs text-sp-dim mt-4">Taking you to sign in…</p>
+      </AuthShell>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Create account</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Start with <span className="font-semibold text-gray-950">1,000 free credits</span>
-          </p>
-        </div>
+    <AuthShell
+      kicker="All aboard"
+      title="Make an account"
+      subtitle={
+        <>
+          You'll start with <span className="font-semibold text-sp-led">1,000 play credits</span>.
+        </>
+      }
+    >
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -114,22 +112,20 @@ export default function SignupPage() {
           )}
 
           <button type="submit" className="btn-primary w-full" disabled={loading}>
-            {loading ? 'Creating account…' : 'Create account'}
+            {loading ? 'One sec…' : 'Sign up'}
           </button>
         </form>
 
-        <p className="text-xs text-gray-400 mt-4 leading-relaxed">
-          Credits are virtual and have no real-world monetary value.
-          Signal Problems is a prediction game, not a gambling service.
+        <p className="text-xs text-sp-dim mt-4 leading-relaxed">
+          Credits are just for fun. They aren't worth real money and you can't buy more.
         </p>
 
-        <p className="text-sm text-gray-500 mt-4 text-center">
+        <p className="text-sm text-sp-dim mt-4 text-center">
           Already have an account?{' '}
-          <Link to="/login" className="text-gray-950 font-medium underline underline-offset-2">
+          <Link to="/login" className="text-sp-accent font-medium underline underline-offset-2">
             Sign in
           </Link>
         </p>
-      </div>
-    </div>
+    </AuthShell>
   )
 }

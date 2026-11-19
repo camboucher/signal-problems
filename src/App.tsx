@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/auth-context'
 import { MockAuthProvider } from './mock/auth-provider'
 import { isMockMode } from './lib/mock-mode'
+import { hasSeenLanding } from './lib/ftue'
 import AppLayout from './components/layout/AppLayout'
 import RequireAuth from './components/auth/RequireAuth'
 import RequireUsername from './components/auth/RequireUsername'
@@ -22,20 +23,22 @@ const AboutPage = lazy(() => import('./pages/AboutPage'))
 function PageLoading() {
   return (
     <div className="flex items-center justify-center py-20">
-      <span className="text-sm text-gray-400">Loading…</span>
+      <span className="text-sm text-sp-dim">Loading…</span>
     </div>
   )
 }
 
 const AppAuthProvider = isMockMode() ? MockAuthProvider : AuthProvider
 
-/** `/` shows the public marketing page to signed-out visitors, and the
- *  trains list (inside the normal app chrome) to signed-in users. */
+/** `/` shows the public landing page once per browser (a first-time-user
+ *  experience gated on localStorage, see `lib/ftue.ts`). After that, and for
+ *  signed-in users, it shows the trains list inside the normal app chrome.
+ *  The landing page stays reachable at `/welcome`. */
 function HomeRoute() {
   const { user, loading } = useAuth()
 
   if (loading) return <PageLoading />
-  if (!user) return <LandingPage />
+  if (!user && !hasSeenLanding()) return <LandingPage />
 
   return (
     <AppLayout>
@@ -67,6 +70,7 @@ export default function App() {
 
           {/* Public marketing page (signed out) / trains list (signed in) */}
           <Route path="/" element={<HomeRoute />} />
+          <Route path="/welcome" element={<LandingPage />} />
 
           {/* App routes with nav */}
           <Route element={<AppLayout />}>

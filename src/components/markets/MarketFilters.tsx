@@ -22,8 +22,8 @@ interface Props {
 const VIEW_MODES: { value: ViewMode; label: string; authRequired: boolean }[] = [
   { value: 'open', label: 'Open', authRequired: false },
   { value: 'all', label: 'All', authRequired: false },
-  { value: 'wagered', label: 'Wagered', authRequired: true },
-  { value: 'favorited', label: 'Favorited', authRequired: true },
+  { value: 'wagered', label: 'My calls', authRequired: true },
+  { value: 'favorited', label: 'Saved', authRequired: true },
 ]
 
 export default function MarketFilters({
@@ -46,16 +46,12 @@ export default function MarketFilters({
   return (
     <div className="space-y-3">
       {/* View mode tabs */}
-      <div className="flex gap-1">
+      <div className="seg">
         {visibleModes.map((mode) => (
           <button
             key={mode.value}
             onClick={() => onViewModeChange(mode.value)}
-            className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wide border transition-colors ${
-              viewMode === mode.value
-                ? 'bg-gray-950 text-white border-gray-950'
-                : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'
-            }`}
+            className={`seg-btn ${viewMode === mode.value ? 'seg-btn-active' : ''}`}
           >
             {mode.label}
           </button>
@@ -66,10 +62,10 @@ export default function MarketFilters({
       <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 no-scrollbar">
         <button
           onClick={() => onLineChange(null)}
-          className={`shrink-0 px-3 py-1 text-xs font-bold uppercase tracking-wide border ${
+          className={`shrink-0 px-3 h-5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
             selectedLine === null
-              ? 'bg-gray-950 text-white border-gray-950'
-              : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'
+              ? 'border-sp-led text-sp-led'
+              : 'border-sp-edge text-sp-dim hover:text-sp-text'
           }`}
         >
           All
@@ -78,10 +74,13 @@ export default function MarketFilters({
           <button
             key={line}
             onClick={() => onLineChange(selectedLine === line ? null : line)}
-            className={`shrink-0 rounded-full ${
+            aria-pressed={selectedLine === line}
+            className={`shrink-0 rounded-full transition-[opacity,transform] ${
               selectedLine === line
-                ? 'ring-2 ring-sp-accent ring-offset-1 ring-offset-sp-bg'
-                : 'opacity-80 hover:opacity-100'
+                ? 'ring-2 ring-sp-led ring-offset-2 ring-offset-sp-bg'
+                : selectedLine
+                  ? 'opacity-40 hover:opacity-100'
+                  : 'opacity-90 hover:opacity-100 hover:-translate-y-px'
             }`}
           >
             <LineBadge line={line} size="sm" />
@@ -96,17 +95,14 @@ export default function MarketFilters({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search stations…"
+          aria-label="Search stations"
           className="input flex-1"
         />
 
-        <div className="flex shrink-0 border border-gray-200 overflow-hidden">
+        <div className="seg shrink-0 self-stretch">
           <button
             onClick={() => onSortByChange('time')}
-            className={`px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors ${
-              sortBy === 'time'
-                ? 'bg-gray-950 text-white'
-                : 'bg-white text-gray-400 hover:text-gray-700'
-            }`}
+            className={`seg-btn ${sortBy === 'time' ? 'seg-btn-active' : ''}`}
           >
             Time
           </button>
@@ -115,12 +111,12 @@ export default function MarketFilters({
               onSortByChange('distance')
               if (locationStatus === 'idle') onRequestLocation()
             }}
-            className={`px-2.5 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors border-l border-gray-200 ${
+            className={`seg-btn ${
               sortBy === 'distance'
-                ? 'bg-gray-950 text-white'
+                ? 'seg-btn-active'
                 : locationStatus === 'denied' || locationStatus === 'error'
-                  ? 'bg-white text-gray-300 cursor-not-allowed'
-                  : 'bg-white text-gray-400 hover:text-gray-700'
+                  ? 'opacity-40 cursor-not-allowed'
+                  : ''
             }`}
           >
             Near
@@ -130,20 +126,20 @@ export default function MarketFilters({
 
       {/* Location status message */}
       {sortBy === 'distance' && locationStatus === 'prompting' && (
-        <p className="text-xs text-gray-400">Waiting for your location…</p>
+        <p className="text-xs text-sp-dim">Finding you…</p>
       )}
       {sortBy === 'distance' && locationStatus === 'ready' && (
         <button
           type="button"
           onClick={onRequestLocation}
-          className="text-xs text-gray-400 hover:text-gray-700 underline"
+          className="text-xs text-sp-dim hover:text-sp-text underline underline-offset-2"
         >
           Update location
         </button>
       )}
       {sortBy === 'distance' && (locationStatus === 'denied' || locationStatus === 'error') && (
-        <p className="text-xs text-gray-400">
-          Location unavailable — showing by time instead.
+        <p className="text-xs text-sp-dim">
+          We couldn't get your location, so trains are sorted by time.
         </p>
       )}
     </div>

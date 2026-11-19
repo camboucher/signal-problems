@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { isMockMode, isRuntimeDemoMode, exitDemoMode } from '../lib/mock-mode'
 import { useMyWagers } from '../hooks/use-profile'
 import WagerHistory from '../components/wagers/WagerHistory'
+import { PageHeader, SectionLabel } from '../components/signage/Signage'
 
 interface StatusMsg {
   type: 'success' | 'error'
@@ -38,7 +39,7 @@ export default function SettingsPage() {
 
     if (isMockMode()) {
       setEmailLoading(false)
-      setEmailMsg({ type: 'success', text: 'Demo mode — email changes are not saved.' })
+      setEmailMsg({ type: 'success', text: "You're in demo mode, so this won't be saved." })
       setNewEmail('')
       return
     }
@@ -71,7 +72,7 @@ export default function SettingsPage() {
 
     if (isMockMode()) {
       setPasswordLoading(false)
-      setPasswordMsg({ type: 'success', text: 'Demo mode — password changes are not saved.' })
+      setPasswordMsg({ type: 'success', text: "You're in demo mode, so this won't be saved." })
       setNewPassword('')
       setConfirmPassword('')
       return
@@ -99,12 +100,12 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-7">
-      <h1 className="text-xl font-bold tracking-tight">Settings</h1>
+      <PageHeader kicker="Your account" title="Settings" />
 
       {/* Account summary */}
       <section>
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">Account</p>
-        <div className="card divide-y divide-gray-100">
+        <SectionLabel>Account</SectionLabel>
+        <div className="card divide-y divide-sp-edge">
           <Row label="Username">{profile?.username ?? '—'}</Row>
           <Row label="Email">{user?.email ?? '—'}</Row>
           <Row label="Balance">
@@ -112,19 +113,19 @@ export default function SettingsPage() {
               {profile?.credits_balance.toLocaleString()} credits
             </span>
           </Row>
-          <Row label="Net Profit">
+          <Row label="Net">
             <span
-              className={`font-bold tabular-nums ${netProfit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}
+              className={`font-bold tabular-nums ${netProfit >= 0 ? 'text-sp-on' : 'text-sp-very'}`}
             >
               {netProfit >= 0 ? '+' : ''}
               {netProfit.toLocaleString()}
             </span>
           </Row>
           {settledWagers.length > 0 && (
-            <Row label="Win Rate">
+            <Row label="Win rate">
               <span className="tabular-nums">
                 {Math.round((wins / settledWagers.length) * 100)}%{' '}
-                <span className="text-gray-400">
+                <span className="text-sp-dim">
                   ({wins}/{settledWagers.length})
                 </span>
               </span>
@@ -135,9 +136,7 @@ export default function SettingsPage() {
 
       {/* Change email */}
       <section>
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
-          Change Email
-        </p>
+        <SectionLabel>Change email</SectionLabel>
         <form onSubmit={handleUpdateEmail} className="card px-4 py-4 space-y-3">
           <div>
             <label htmlFor="new-email" className="label">New email address</label>
@@ -151,7 +150,7 @@ export default function SettingsPage() {
             />
           </div>
           {emailMsg && (
-            <p className={`text-sm ${emailMsg.type === 'error' ? 'text-red-500' : 'text-emerald-600'}`}>
+            <p className={`text-sm ${emailMsg.type === 'error' ? 'text-sp-very' : 'text-sp-on'}`}>
               {emailMsg.text}
             </p>
           )}
@@ -160,16 +159,14 @@ export default function SettingsPage() {
             disabled={emailLoading || !newEmail.trim()}
             className="btn-primary"
           >
-            {emailLoading ? 'Updating…' : 'Update Email'}
+            {emailLoading ? 'Saving…' : 'Update email'}
           </button>
         </form>
       </section>
 
       {/* Change password */}
       <section>
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
-          Change Password
-        </p>
+        <SectionLabel>Change password</SectionLabel>
         <form onSubmit={handleUpdatePassword} className="card px-4 py-4 space-y-3">
           <div>
             <label htmlFor="new-password" className="label">New password</label>
@@ -194,7 +191,7 @@ export default function SettingsPage() {
             />
           </div>
           {passwordMsg && (
-            <p className={`text-sm ${passwordMsg.type === 'error' ? 'text-red-500' : 'text-emerald-600'}`}>
+            <p className={`text-sm ${passwordMsg.type === 'error' ? 'text-sp-very' : 'text-sp-on'}`}>
               {passwordMsg.text}
             </p>
           )}
@@ -203,16 +200,14 @@ export default function SettingsPage() {
             disabled={passwordLoading || !newPassword}
             className="btn-primary"
           >
-            {passwordLoading ? 'Updating…' : 'Update Password'}
+            {passwordLoading ? 'Saving…' : 'Update password'}
           </button>
         </form>
       </section>
 
       {/* Wager history */}
       <section>
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">
-          Wager History
-        </p>
+        <SectionLabel>Your calls</SectionLabel>
         <WagerHistory wagers={wagers} isLoading={wagersQuery.isLoading} />
       </section>
 
@@ -229,7 +224,7 @@ export default function SettingsPage() {
 function Row({ label, children }: { readonly label: string; readonly children: React.ReactNode }) {
   return (
     <div className="flex justify-between items-center px-4 py-2.5">
-      <span className="text-xs text-gray-400 uppercase tracking-wide">{label}</span>
+      <span className="text-[10px] font-bold text-sp-dim uppercase tracking-widest">{label}</span>
       <span className="text-sm">{children}</span>
     </div>
   )
