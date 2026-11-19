@@ -1,11 +1,21 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
 import { markLandingSeen } from '../lib/ftue'
 import AuthShell from '../components/layout/AuthShell'
 
+function friendlyAuthError(message: string): string {
+  if (/email not confirmed/i.test(message)) {
+    return "You haven't confirmed your email yet. Check your inbox for the link we sent."
+  }
+  if (/invalid login credentials/i.test(message)) {
+    return "That email and password don't match. Try again?"
+  }
+  return message
+}
+
 export default function LoginPage() {
-  const { signIn } = useAuth()
+  const { signIn, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: string })?.from ?? '/'
@@ -22,11 +32,15 @@ export default function LoginPage() {
     const { error } = await signIn(email, password)
     setLoading(false)
     if (error) {
-      setError(error.message)
+      setError(friendlyAuthError(error.message))
     } else {
       navigate(from, { replace: true })
     }
   }
+
+  // Already signed in (e.g. came back from an email link, or hit Back after
+  // signing in): skip the form.
+  if (user) return <Navigate to={from} replace />
 
   return (
     <AuthShell kicker="Welcome back" title="Sign in" subtitle="Your trains are waiting. Probably late.">

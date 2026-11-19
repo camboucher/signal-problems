@@ -86,9 +86,12 @@ App runs at http://localhost:5173
 
 ## Auth flow
 
-1. User signs up → email confirmation sent → `handle_new_user` trigger creates profile with 1,000 credits
-2. On first login, user is redirected to `/setup-username` to pick a handle
-3. All market/wager pages require authentication
+1. User signs up. The `handle_new_user` trigger creates their profile with 1,000 credits.
+2. If the project requires email confirmation, they get a link that points back to the origin they signed up from (`emailRedirectTo`). Otherwise they're signed in right away.
+3. On first sign-in they're sent to `/setup-username` to pick a handle.
+4. Browsing trains, markets, profiles, and the leaderboard works signed out. Wagering and `/settings` need an account.
+
+**Hosted Supabase project:** in the dashboard under Authentication > URL Configuration, set Site URL to your production URL and add `http://localhost:5173/**` to Redirect URLs. Otherwise confirmation links from local signups go to the Site URL instead of your dev server. The local CLI stack (`supabase/config.toml`) already allows `localhost:5173` and `127.0.0.1:5173`.
 
 ---
 

@@ -10,7 +10,12 @@ export interface AuthContextValue {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>
+  /** `needsConfirmation` is true when Supabase didn't return a session, i.e.
+   *  the project requires the user to click an email link before signing in. */
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: Error | null; needsConfirmation: boolean }>
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   updateUsername: (username: string) => Promise<{ error: Error | null }>
@@ -55,8 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string) {
-    const { error } = await supabase.auth.signUp({ email, password })
-    return { error }
+    // Send the confirmation link back to whatever origin the user signed up
+    // from (localhost in dev, the real domain in prod). Without this, Supabase
+    // falls back to the project's Site URL, which is often a dead port in dev.
+    // The origin must also be in Auth > URL Configuration > Redirect URLs.
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    })
+    return { error, needsConfirmation: !error && !data.session }
   }
 
   async function signIn(email: string, password: string) {

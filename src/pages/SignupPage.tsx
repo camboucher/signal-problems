@@ -28,14 +28,17 @@ export default function SignupPage() {
     }
 
     setLoading(true)
-    const { error } = await signUp(email, password)
+    const { error, needsConfirmation } = await signUp(email, password)
     setLoading(false)
 
     if (error) {
       setError(error.message)
-    } else {
+    } else if (needsConfirmation) {
       setSuccess(true)
-      setTimeout(() => navigate('/login'), 3000)
+    } else {
+      // Email confirmation is off, so the user is already signed in.
+      // RequireUsername sends them on to /setup-username from here.
+      navigate('/', { replace: true })
     }
   }
 
@@ -46,7 +49,12 @@ export default function SignupPage() {
           We sent a link to <span className="font-medium text-sp-text">{email}</span>. Click it to
           finish signing up and grab your 1,000 credits.
         </p>
-        <p className="text-xs text-sp-dim mt-4">Taking you to sign in…</p>
+        <p className="text-sm text-sp-dim mt-6">
+          Already clicked it?{' '}
+          <Link to="/login" className="text-sp-accent font-medium underline underline-offset-2">
+            Sign in
+          </Link>
+        </p>
       </AuthShell>
     )
   }

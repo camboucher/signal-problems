@@ -49,7 +49,7 @@ export function MockAuthProvider({ children }: { children: ReactNode }) {
       user: MOCK_USER,
       profile,
       loading: false,
-      signUp: async () => ({ error: null }),
+      signUp: async () => ({ error: null, needsConfirmation: false }),
       signIn: async () => ({ error: null }),
       signOut: async () => {},
       updateUsername: async (username: string) => {
